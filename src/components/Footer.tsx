@@ -26,10 +26,18 @@ export function Footer() {
               {config.appSignInUrl ? <li><a href={config.appSignInUrl}>Sign in</a></li> : null}
             </ul>
           </nav>
+          <nav aria-labelledby="f-company">
+            <h2 id="f-company">Company</h2>
+            <ul>
+              <li><a href="/about/">About</a></li>
+              <li><a href="/contact/">Contact</a></li>
+              <li><a href={`mailto:${config.contactEmail}`}>{config.contactEmail}</a></li>
+            </ul>
+          </nav>
         </div>
         <div className="footer-base">
-          <span>© 2026 Kaimbrya</span>
-          <span>App screens show fictional demonstration data.</span>
+          <span>© {new Date().getFullYear()} Kaimbrya · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms of use</a></span>
+          <span>App screenshots feature fictional data for demonstration purposes only.</span>     
         </div>
       </div>
     </footer>

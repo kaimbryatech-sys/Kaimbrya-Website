@@ -16,8 +16,9 @@
     if (r.top < vh * 0.92 && r.bottom > 0) el.setAttribute("data-shown", "");
   });
   root.classList.add("enhanced");
+  var io = null;
   if ("IntersectionObserver" in window) {
-    var io = new IntersectionObserver(function (entries) {
+    io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (e.isIntersecting) { e.target.setAttribute("data-shown", ""); io.unobserve(e.target); }
       });
@@ -25,6 +26,29 @@
     items.forEach(function (el) { if (!el.hasAttribute("data-shown")) io.observe(el); });
   } else {
     items.forEach(function (el) { el.setAttribute("data-shown", ""); });
+  }
+  // Safety net: a fast flick, the End key or a jump to an anchor can carry an item
+  // past the viewport between observer samples. On each scroll frame, show anything
+  // whose top has already passed the fold (all reads first, then all writes).
+  var pending = items.filter(function (el) { return !el.hasAttribute("data-shown"); });
+  var sweepQueued = false;
+  var sweep = function () {
+    sweepQueued = false;
+    var limit = window.innerHeight * 0.92;
+    var tops = pending.map(function (el) { return el.getBoundingClientRect().top; });
+    var keep = [];
+    pending.forEach(function (el, i) {
+      if (el.hasAttribute("data-shown")) return;
+      if (tops[i] < limit) { el.setAttribute("data-shown", ""); if (io) io.unobserve(el); }
+      else keep.push(el);
+    });
+    pending = keep;
+    if (!pending.length) { window.removeEventListener("scroll", onSweep); window.removeEventListener("resize", onSweep); }
+  };
+  var onSweep = function () { if (!sweepQueued) { sweepQueued = true; requestAnimationFrame(sweep); } };
+  if (pending.length) {
+    window.addEventListener("scroll", onSweep, { passive: true });
+    window.addEventListener("resize", onSweep);
   }
 
   // 2 · Scroll progress: --p goes 0 → 1 while a tall section scrolls past its

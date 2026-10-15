@@ -29,3 +29,13 @@ Every image on the site is a real capture of the Kaimbrya app. The captures come
 | ideas-board.png | Crop of `/dashboard/ideas`, admin | Community | Yes |
 
 Guards scanning the QR pass at the gate was checked in code: `UnifiedScanner` uses `useScannerEngine`, with `BarcodeDetector` or jsQR.
+
+## Added for the Platform and Solutions pages (15 October 2026)
+
+| File | App page and account | Used for | Feature checked in the app |
+| --- | --- | --- | --- |
+| setup-wizard.png | Property Intake Console, opened from "Launch Creation Wizard" on `/dashboard/property-management`, admin; nothing submitted | Developers; Platform › Properties | Yes. Cropped to the Batch and Structural cards because on the first card the "Recommended" badge overlaps the "Standard" title, which is an app bug. The full capture is in source-only/ |
+| roles-permissions.png | `/dashboard/access-control`, admin; the Security Supervisor role selected | Property managers; Platform › Administration | Yes. 181 permissions across 48 resources |
+| data-export.png | `/dashboard/data-export`, admin | Property managers; Platform › Administration | Yes. Export builder with column picking |
+| incidents-queue.png | Crop of `/dashboard/incident-management`, admin | Gated communities; Platform › Security | Yes |
+| announcements-table.png | Crop of `/dashboard/announcements`, admin | Strata; Platform › Communication | Yes |

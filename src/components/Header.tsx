@@ -14,7 +14,8 @@ const MENUS: ReadonlyArray<{ id: MenuId; label: string; links: typeof platformLi
 
 export function Header() {
   const pathname = usePathname();
-  const overHero = pathname === "/";
+  // Every page opens on a dark hero except the demo page.
+  const overHero = !["/demo", "/contact", "/privacy", "/terms"].some((p) => pathname.startsWith(p));
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<MenuId | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);

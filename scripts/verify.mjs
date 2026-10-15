@@ -2,7 +2,7 @@
 // request interception: no dev server. Writes screenshots and qa/report.json.
 //
 //   npm run build && npm run verify
-import { readFile, mkdir, writeFile, stat } from "node:fs/promises";
+import { readFile, readdir, mkdir, writeFile, stat } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 import path from "node:path";
 import { chromium } from "@playwright/test";
@@ -47,8 +47,11 @@ const browser = await chromium.launch();
 
 async function scrollThrough(page) {
   await page.evaluate(async () => {
-    for (let y = 0; y < document.body.scrollHeight; y += Math.round(innerHeight * 0.6)) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); }
-    scrollTo(0, 0); await new Promise((r) => setTimeout(r, 300));
+    // A realistic reading pace, so reveals behave as they do for people.
+    // Jump instantly: the site's smooth scrolling would otherwise turn each step into an
+    // interrupted animation that never reaches the lower sections.
+    for (let y = 0; y < document.documentElement.scrollHeight; y += Math.round(innerHeight * 0.4)) { scrollTo({ top: y, behavior: "instant" }); await new Promise((r) => setTimeout(r, 90)); }
+    scrollTo({ top: 0, behavior: "instant" }); await new Promise((r) => setTimeout(r, 900)); // let the last fades finish
   });
 }
 
@@ -163,6 +166,75 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
   await mobile.close();
 }
 
+// Inner pages: full-page screenshots, overflow and accessibility at phone and desktop widths.
+{
+  const PAGES = ["/platform/", "/solutions/gated-communities/", "/solutions/strata-and-hoas/", "/solutions/property-managers/", "/solutions/developers/", "/about/", "/contact/", "/privacy/", "/terms/"];
+  for (const [name, opts] of [["mobile", { ...VIEWPORTS.mobile, deviceScaleFactor: 1 }], ["desktop", VIEWPORTS.desktop]]) {
+    const context = await browser.newContext(opts);
+    await serve(context);
+    const page = await context.newPage();
+    page.on("pageerror", (e) => report.problems.push(`${name} pageerror: ${e.message}`));
+    page.on("console", (m) => { if (m.type() === "error") report.problems.push(`${name} console: ${m.text()}`); });
+    page.on("response", (r) => { if (r.status() >= 400) report.problems.push(`${name} ${r.status()} ${r.url()}`); });
+    for (const url of PAGES) {
+      await page.goto(`${ORIGIN}${url}`, { waitUntil: "networkidle" });
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(1200);
+      const slug = url.replace(/^\/|\/$/g, "").replaceAll("/", "-");
+      await page.screenshot({ path: path.join(QA, `page-${slug}-${name}-top.png`) });
+      await scrollThrough(page);
+      await page.screenshot({ path: path.join(QA, `page-${slug}-${name}-full.jpg`), fullPage: true, type: "jpeg", quality: 72 });
+      // The same page in viewport-sized slices, for reviewing at a readable size.
+      const height = await page.evaluate(() => document.documentElement.scrollHeight);
+      const sliceH = name === "desktop" ? 1800 : 1400;
+      for (let y = 0, i = 0; y < height; y += sliceH, i++) {
+        await page.screenshot({ path: path.join(QA, `slice-${slug}-${name}-${i}.jpg`), fullPage: true, type: "jpeg", quality: 70, clip: { x: 0, y, width: opts.viewport.width, height: Math.min(sliceH, height - y) } });
+      }
+      report.overflow[`${slug}-${name}`] = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth, offenders: [] }));
+      const stillHidden = await page.evaluate(() => document.querySelectorAll("[data-reveal]:not([data-shown])").length);
+      if (stillHidden) report.problems.push(`${slug}-${name}: ${stillHidden} sections never revealed`);
+      await page.waitForTimeout(800); // fades complete before contrast is measured
+      const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+      report.a11y[`${slug}-${name}`] = axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target?.join(" ") }));
+    }
+    await context.close();
+  }
+}
+
+// Every internal link and #anchor in the built site must point at something real.
+{
+  const pages = [];
+  const walk = async (dir) => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) { if (!entry.name.startsWith("_")) await walk(full); }
+      else if (entry.name === "index.html") pages.push(full);
+    }
+  };
+  await walk(OUT);
+  const ids = new Map();
+  const idsOf = async (file) => {
+    if (!ids.has(file)) ids.set(file, new Set([...(await readFile(file, "utf8")).matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])));
+    return ids.get(file);
+  };
+  const broken = [];
+  let checked = 0;
+  for (const file of pages) {
+    const route = "/" + path.relative(OUT, path.dirname(file)).split(path.sep).filter(Boolean).join("/");
+    const html = await readFile(file, "utf8");
+    for (const [, href] of html.matchAll(/<a\b[^>]*\shref="([^"]+)"/g)) {
+      if (!href.startsWith("/") && !href.startsWith("#")) continue;
+      checked++;
+      const [pathAndQuery, hash] = href.split("#");
+      const target = pathAndQuery.split("?")[0] || (route.endsWith("/") ? route : `${route}/`);
+      const targetFile = path.join(OUT, target, target.endsWith("/") ? "index.html" : "");
+      try { await stat(targetFile); } catch { broken.push(`${route} → ${href} (no page)`); continue; }
+      if (hash && !(await idsOf(targetFile)).has(hash)) broken.push(`${route} → ${href} (no #${hash})`);
+    }
+  }
+  report.links = { pages: pages.length, checked, broken };
+}
+
 // Approximate lab performance on a phone: 4× CPU slowdown, ~Fast 4G per request.
 {
   const ledger = [];
@@ -194,6 +266,9 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
     jsGzipBytes: jsGzip,
     requests: [...ledger].sort((a, b) => b.wire - a.wire).map((r) => `${r.path} ${Math.round(r.wire / 1024)} KB`),
   };
+  // Budget from the website specification: at most 175 KB of gzipped JavaScript on first load.
+  const JS_BUDGET = 175 * 1024;
+  if (jsGzip > JS_BUDGET) report.problems.push(`perf: ${(jsGzip / 1024).toFixed(1)} KB gzipped JS exceeds the 175 KB budget`);
   await context.close();
 }
 

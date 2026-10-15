@@ -1,5 +1,6 @@
 "use client";
 
+import { LazyMotion, MotionConfig, m } from "framer-motion";
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import type { GuestStep } from "@/content/site";
 import { PanelFrame, PhoneFrame } from "./Frames";
@@ -34,6 +35,8 @@ export function GuestJourney({ steps, children }: { steps: GuestStep[]; children
   };
 
   return (
+    <LazyMotion features={loadFeatures} strict>
+    <MotionConfig reducedMotion="user">
     <div className="guest-grid">
       <div>
         {children}
@@ -88,12 +91,25 @@ export function GuestJourney({ steps, children }: { steps: GuestStep[]; children
             />
           );
           return (
-            <div key={step.id} className="guest-shot" data-active={i === active} aria-hidden={i !== active}>
+            <m.div
+              key={step.id}
+              className="guest-shot"
+              data-active={i === active}
+              aria-hidden={i !== active}
+              initial={false}
+              animate={i === active
+                ? { opacity: 1, x: 0, rotate: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 28, mass: 0.9 } }
+                : { opacity: 0, x: (i < active ? -1 : 1) * 70, rotate: (i < active ? -2 : 2), scale: 0.94, transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } }}
+            >
               {step.device === "phone" ? <PhoneFrame>{shot}</PhoneFrame> : <PanelFrame>{shot}</PanelFrame>}
-            </div>
+            </m.div>
           );
         })}
       </div>
     </div>
+    </MotionConfig>
+    </LazyMotion>
   );
 }
+
+const loadFeatures = () => import("./motion-features").then((mod) => mod.default);

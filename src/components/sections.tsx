@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import {
   audiences,
   audiencesSection,
@@ -14,20 +14,12 @@ import {
   roles,
 } from "@/content/site";
 import { Art, Scene } from "./Art";
+import { CtaBand, Reveal } from "./blocks";
 import { DesktopFrame, PanelFrame, PhoneFrame } from "./Frames";
 import { GuestJourney } from "./GuestJourney";
 import { ArrowRight, Check, Receipt } from "./icons";
 import { RoleSwitcher } from "./RoleSwitcher";
 import { Screen } from "./Screen";
-
-/** Fades and rises into view once (see public/enhance.js); `i` staggers siblings. */
-function Reveal({ i = 0, className, children }: { i?: number; className?: string; children: ReactNode }) {
-  return (
-    <div data-reveal className={className} style={{ "--i": i } as CSSProperties}>
-      {children}
-    </div>
-  );
-}
 
 // ── 1 · Hero (signature A) ──────────────────────────────────────────────────
 export function Hero() {
@@ -312,9 +304,9 @@ export function Audiences() {
                 <div className="aud-body">
                   <h3>{a.title}</h3>
                   <p>{a.text}</p>
-                  <Link prefetch={false} className="link-arrow" href={`/demo/?type=${a.id}`}>
-                    {audiencesSection.linkLabel}<span className="sr-only"> for {a.title.toLowerCase()}</span> <ArrowRight />
-                  </Link>
+                  <a className="link-arrow" href={`/solutions/${a.slug}/`}>
+                    {audiencesSection.linkLabel}<span className="sr-only">: {a.title.toLowerCase()}</span> <ArrowRight />
+                  </a>
                 </div>
               </article>
             </Reveal>
@@ -327,21 +319,5 @@ export function Audiences() {
 
 // ── 10 · Final call to action ───────────────────────────────────────────────
 export function FinalCta() {
-  return (
-    <section className="section cta on-dark dots" aria-labelledby="cta-title">
-      <div className="wrap cta-grid">
-        <Reveal>
-          <h2 id="cta-title" className="title">{finalCta.title}</h2>
-          <p className="lead" style={{ marginTop: 18 }}>{finalCta.text}</p>
-          <div className="cta-actions">
-            <Link prefetch={false} href={finalCta.primary.href} className="btn btn-primary">{finalCta.primary.label} <ArrowRight /></Link>
-            <Link href={finalCta.secondary.href} className="btn btn-secondary" prefetch={false}>{finalCta.secondary.label}</Link>
-          </div>
-        </Reveal>
-        <Reveal i={1}>
-          <Scene name="welcome" className="cta-art" position="50% 70%" />
-        </Reveal>
-      </div>
-    </section>
-  );
+  return <CtaBand title={finalCta.title} text={finalCta.text} primary={finalCta.primary} secondary={finalCta.secondary} />;
 }

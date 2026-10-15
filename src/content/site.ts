@@ -7,6 +7,8 @@ import type { ScreenName } from "./screens.generated";
  */
 
 export const config = {
+  /** Business inbox, confirmed October 2026. */
+  contactEmail: "kaimbryatech@gmail.com",
   /** Open question: the app's sign-in address. The Sign in link is hidden until this is set. */
   appSignInUrl: process.env.NEXT_PUBLIC_APP_SIGN_IN_URL ?? "",
   /** Open question: where demo requests go. Unset = prototype mode (nothing is sent). */
@@ -17,6 +19,8 @@ export type AudienceId = "gated" | "strata" | "managers" | "developers";
 
 export const audiences: ReadonlyArray<{
   id: AudienceId;
+  /** URL segment of the audience's page: /solutions/<slug>/ */
+  slug: string;
   anchor: string;
   title: string;
   text: string;
@@ -24,6 +28,7 @@ export const audiences: ReadonlyArray<{
 }> = [
   {
     id: "gated",
+    slug: "gated-communities",
     anchor: "for-gated-communities",
     title: "Gated communities",
     text: "Guest passes, guard review and a searchable record of every visit.",
@@ -31,6 +36,7 @@ export const audiences: ReadonlyArray<{
   },
   {
     id: "strata",
+    slug: "strata-and-hoas",
     anchor: "for-strata-and-hoas",
     title: "Strata corporations and HOAs",
     text: "Fees, arrears, owner records and notices in one shared system.",
@@ -38,6 +44,7 @@ export const audiences: ReadonlyArray<{
   },
   {
     id: "managers",
+    slug: "property-managers",
     anchor: "for-property-managers",
     title: "Property management companies",
     text: "Run Kaimbrya for each community you look after, each with its own records.",
@@ -45,6 +52,7 @@ export const audiences: ReadonlyArray<{
   },
   {
     id: "developers",
+    slug: "developers",
     anchor: "for-developers",
     title: "Residential developers",
     text: "Set up every unit in one go, and let owners claim their homes before handover.",
@@ -53,15 +61,15 @@ export const audiences: ReadonlyArray<{
 ];
 
 export const platformLinks = [
-  { href: "/#platform", title: "One connected platform", text: "Why one shared record beats five tools" },
-  { href: "/#finance", title: "Finance and collections", text: "Invoices, recorded payments and arrears" },
-  { href: "/#guest-access", title: "Guest access", text: "Invite, approve and scan at the gate" },
-  { href: "/#roles", title: "For every role", text: "Homeowners, managers and security" },
-  { href: "/#operations", title: "Properties and maintenance", text: "One register; work tracked to done" },
-  { href: "/#community", title: "Notices and votes", text: "Announcements, votes and ideas" },
+  { href: "/platform/", title: "Platform overview", text: "Every module, and how they fit together" },
+  { href: "/platform/#finance", title: "Finance and collections", text: "Invoices, recorded payments and arrears" },
+  { href: "/platform/#guest-access", title: "Guest access and security", text: "Visitors, the gate, incidents and shifts" },
+  { href: "/platform/#properties", title: "Properties and maintenance", text: "One register; work tracked to done" },
+  { href: "/platform/#community", title: "Community life", text: "Notices, events, votes and bookings" },
+  { href: "/platform/#administration", title: "Roles and records", text: "Permissions, audit trail and exports" },
 ];
 
-export const solutionLinks = audiences.map((a) => ({ href: `/#${a.anchor}`, title: a.title, text: a.text }));
+export const solutionLinks = audiences.map((a) => ({ href: `/solutions/${a.slug}/`, title: a.title, text: a.text }));
 
 export const hero = {
   eyebrow: "Community management for Jamaica",
@@ -69,14 +77,14 @@ export const hero = {
   titleEmphasis: "reimagined.",
   lead: "One connected platform for community finances, guest access, properties, maintenance and communication. Built for modern Jamaican communities.",
   primary: { label: "Book a personal demo", href: "/demo/" },
-  secondary: { label: "Explore the platform", href: "/#platform" },
+  secondary: { label: "Explore the platform", href: "/platform/" },
 };
 
 export const credibility = {
-  eyebrow: "In use today",
+  eyebrow: "Rolling out now",
   title: "Built for real communities. Designed for everyday life.",
   items: [
-    { title: "190+ homes", text: "Kaimbrya is rolling out at a gated community of more than 190 homes in Jamaica." },
+    { title: "190+ homes", text: "Kaimbrya is currently being rolled out to a Jamaican residential community comprising more than 190 homes." },
     { title: "Phone-first", text: "Homeowners and guards use the phones they already carry. There's nothing to install at the gate." },
     { title: "One record", text: "Collections, the gate, repairs and notices share one system, so nothing is copied between tools." },
   ],
@@ -100,8 +108,8 @@ export const finance = {
   eyebrow: "Finance and collections",
   title: "Know where your community stands. Without the spreadsheet.",
   lead: "Invoices go out on their own every month. When an owner pays by bank transfer, your team records it and matches it to the right unit, and no balance changes until someone confirms the match.",
-  board: ["Outstanding and overdue totals, always current", "Overdue accounts flagged by rules you set", "Payment reminders sent automatically"],
-  owners: ["Balances, invoices and receipts in one place", "Proof of payment sent from the phone"],
+  board: ["Outstanding and overdue totals, always current", "Overdue accounts flagged by rules you set", "Owners alerted in the app when an account falls overdue"],
+  owners: ["Balances, invoices and PDF receipts in one place", "Proof of payment sent from the phone"],
   callouts: ["Total owed, always current", "Overdue accounts, flagged for follow-up"],
 };
 
@@ -161,7 +169,7 @@ export const roles = {
       id: "manager",
       label: "Manager",
       title: "The whole community at a glance",
-      points: ["Collections and overdue accounts", "Every unit, owner and resident", "Maintenance tasks, weekly plans and recurring jobs", "A record of who did what, and when"],
+      points: ["Collections and overdue accounts", "Every unit, owner and resident", "Maintenance tasks, weekly plans and recurring jobs", "Sign-ins and key changes on record"],
       screen: "property-register-full",
       device: "desktop",
       alt: "Kaimbrya manager view: the property register with occupied and vacant counts and the unit list",
@@ -170,7 +178,7 @@ export const roles = {
       id: "security",
       label: "Security",
       title: "The gate, organised",
-      points: ["Review visitor requests as they arrive", "Scan guest passes and IDs at the gate", "Log incidents and hand over between shifts", "Check the shared blocklist"],
+      points: ["Review visitor requests as they arrive", "Scan guest passes and licences at the gate", "Log incidents and hand over between shifts", "Check the shared blocklist"],
       screen: "security-reviews",
       device: "panel",
       alt: "Kaimbrya security view: pending visitor reviews, with Scan ID and Register Visitor buttons",
@@ -202,14 +210,14 @@ export const community = {
 export const audiencesSection = {
   eyebrow: "Solutions",
   title: "Whatever your community looks like, Kaimbrya helps bring it together.",
-  linkLabel: "Book a tailored demo",
+  linkLabel: "See how it works",
 };
 
 export const finalCta = {
   title: "Your community deserves better management.",
   text: "See how Kaimbrya could simplify everyday operations for your community or development.",
   primary: { label: "Schedule your demonstration", href: "/demo/" },
-  secondary: { label: "Contact our team", href: "/demo/#message" },
+  secondary: { label: "Contact our team", href: "/demo/" },
 };
 
 export const demoPage = {
