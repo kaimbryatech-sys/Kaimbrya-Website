@@ -9,7 +9,7 @@ import type { ScreenName } from "./screens.generated";
 export const config = {
   /** Open question: the app's sign-in address. The Sign in link is hidden until this is set. */
   appSignInUrl: process.env.NEXT_PUBLIC_APP_SIGN_IN_URL ?? "",
-  /** Open question: where demo requests go. Unset = prototype mode (nothing is sent). */
+  /** Optional custom endpoint for demo requests. Unset = submissions go to Netlify Forms ("demo-request"). */
   demoEndpoint: process.env.NEXT_PUBLIC_DEMO_ENDPOINT ?? "",
 };
 

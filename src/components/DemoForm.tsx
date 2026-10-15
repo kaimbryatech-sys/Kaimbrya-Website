@@ -63,8 +63,14 @@ export function DemoForm() {
           body: JSON.stringify({ ...values, source: typeof window === "undefined" ? "" : window.location.href }),
         });
         if (!res.ok) throw new Error(String(res.status));
-      } else {
-        await new Promise((r) => setTimeout(r, 500)); // prototype: nothing is sent
+      } else if (!honeypot) {
+        // Netlify Forms: post to the static skeleton so the request bypasses the Next.js handler
+        const res = await fetch("/__forms.html", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ "form-name": "demo-request", ...values, source: window.location.href }).toString(),
+        });
+        if (!res.ok) throw new Error(String(res.status));
       }
       setState("sent");
       requestAnimationFrame(() => headingRef.current?.focus());
@@ -80,9 +86,6 @@ export function DemoForm() {
         <div className="success-icon"><Check /></div>
         <h2 ref={headingRef} tabIndex={-1}>Thank you, {first}.</h2>
         <p>We&apos;ll contact you at <strong>{values.email.trim()}</strong> to arrange a time for your demonstration.</p>
-        {!config.demoEndpoint ? (
-          <p className="prototype-note"><strong>Prototype:</strong> this request was not sent anywhere. Connect a demo-request endpoint before launch.</p>
-        ) : null}
       </div>
     );
   }
@@ -100,7 +103,7 @@ export function DemoForm() {
     touched[name] && errors[name] ? <p id={`f-${name}-error`} className="field-error"><Alert width={16} height={16} />{errors[name]}</p> : null;
 
   return (
-    <form ref={formRef} className="form-card" noValidate onSubmit={submit} aria-labelledby="demo-form-title">
+    <form ref={formRef} name="demo-request" method="POST" data-netlify="true" netlify-honeypot="website" className="form-card" noValidate onSubmit={submit} aria-labelledby="demo-form-title">
       <h2 id="demo-form-title" className="sr-only">Demo request</h2>
       <div className="form-grid">
         <div className="field">
