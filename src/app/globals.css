@@ -148,10 +148,10 @@ img, svg { display: block; max-width: 100%; }
   background: #fff; color: var(--color-ink); border-radius: 18px; padding: 10px;
   box-shadow: 0 0 0 1px rgba(21, 35, 45, 0.06), 0 28px 60px -20px rgba(4, 20, 27, 0.35);
   display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-  opacity: 0; transform: translateY(-6px);
+  opacity: 0; transform: translateY(-6px); visibility: hidden; pointer-events: none;
   transition: opacity var(--dur-menu) var(--ease-out), transform var(--dur-menu) var(--ease-out), visibility 0s linear var(--dur-menu);
 }
-.mega[data-open="true"] { opacity: 1; transform: none; visibility: visible; transition-delay: 0s; }
+.mega[data-open="true"] { opacity: 1; transform: none; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 .mega a { display: block; padding: 12px 14px; border-radius: 12px; transition: background-color var(--dur-fast); }
 .mega a:hover, .mega a:focus-visible { background: var(--color-paper); }
 .mega strong { display: block; font-weight: 600; font-size: 0.96875rem; }

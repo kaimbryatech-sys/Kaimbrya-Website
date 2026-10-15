@@ -77,8 +77,13 @@ export function Header() {
   const hoverOpen = (id: MenuId) => (e: React.PointerEvent) => {
     if (e.pointerType !== "mouse") return;
     window.clearTimeout(hoverTimer.current);
-    if (open !== id) hoverOpenedAt.current = performance.now();
-    setOpen(id);
+    if (open === id) return;
+    // Hover intent: a pointer just passing over the nav doesn't open anything; moving
+    // between open menus switches immediately.
+    hoverTimer.current = window.setTimeout(() => {
+      hoverOpenedAt.current = performance.now();
+      setOpen(id);
+    }, open === null ? 140 : 0);
   };
   const hoverClose = (e: React.PointerEvent) => {
     if (e.pointerType !== "mouse") return;
