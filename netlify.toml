@@ -1,0 +1,5 @@
+# The site is a fully static Next.js export (output: "export" in next.config.ts),
+# so Netlify runs the Next build and publishes the generated `out/` folder.
+[build]
+  command = "npm run build"
+  publish = "out"
