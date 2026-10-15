@@ -1,0 +1,30 @@
+{
+  "name": "kaimbrya-website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kaimbrya public marketing website (homepage prototype). Separate from the Kaimbrya app.",
+  "scripts": {
+    "dev": "next dev --port 3400",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "art": "python3 scripts/build_art.py",
+    "images": "node scripts/build-images.mjs",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.56.1",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "sharp": "0.35.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3"
+  }
+}
