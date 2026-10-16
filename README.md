@@ -1,101 +1,83 @@
-# Kaimbrya website: homepage prototype
+# Kaimbrya website
 
-The public marketing site for Kaimbrya, as a separate project from the app. It's a static Next.js site: every page is pre-rendered HTML, so it holds no app data, sessions or credentials.
+The public marketing site for Kaimbrya, kept separate from the app. It's a static Next.js site: every page is pre-rendered HTML, so it holds no app data, sessions or credentials.
 
-The specification behind it is the "Kaimbrya Website Specification" doc.
+- **Live (public demonstration):** https://kaimbrya.netlify.app
+- **Repo:** `kaimbryatech-sys/Kaimbrya-Website`. Pushing to `main` deploys to Netlify.
+- **Specification:** the "Kaimbrya Website Specification" doc. Product claims must follow its "Product facts" table.
 
 ## Run it
 
 ```bash
 npm install
 npm run dev        # http://localhost:3400
+npm run build      # static site in out/
 ```
 
-Production build (static files in `out/`, ready for Vercel or any static host):
+## Pages
 
-```bash
-npm run build
-```
+| Page | Path |
+| --- | --- |
+| Home | `/` |
+| Platform overview | `/platform/` (seven module sections with anchors, e.g. `#finance`) |
+| Solutions | `/solutions/gated-communities/`, `/strata-and-hoas/`, `/property-managers/`, `/developers/` |
+| Book a demo | `/demo/` (`?type=gated` and similar pre-select the organisation type) |
+| About, Contact | `/about/`, `/contact/` |
+| Privacy policy, Terms of use | `/privacy/`, `/terms/` |
 
-Checks (headless, no server needed):
+Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`); the legal and company pages are in `src/app/<page>/page.tsx`.
 
-```bash
-npm run typecheck
-npm run build && npm run verify   # screenshots and qa/report.json
-```
+## Hosting and the demo form
 
-## What's built
-
-**Homepage**, ten sections:
-1. Hero
-2. Credibility
-3. The old way vs Kaimbrya
-4. Finance
-5. Guest access
-6. Every role
-7. Properties and maintenance
-8. Communication and governance
-9. Solutions
-10. Final call to action
-
-**Three signature sequences:**
-- **A · Hero.** The headline is readable on the first frame. The screens and notifications settle in, the illustration drifts slowly, and a mouse tilts the screens slightly (desktop only).
-- **B · Convergence.** On desktop with motion allowed, a pinned scene driven by scroll: the five old tools (group chat, spreadsheet, bank statement, gate logbook, phone) converge into the Kaimbrya dashboard while the copy swaps. It reverses when you scroll back. On phones, with reduced motion, or without JavaScript, it's a static before and after.
-- **C · Guest access.** Invite → Approve → Arrive. You control it (click, arrow keys or swipe), with a progress bar and no autoplay.
-
-**Navigation:** a transparent header that turns solid on scroll, Platform and Solutions mega menus, and a full-screen mobile menu.
-
-**Book a demo (`/demo/`):** a six-field form with validation, a spam honeypot, and the organisation type pre-selected from the Solutions cards (`?type=`).
+- **Netlify** builds with `npm run build` and publishes `out/` (`netlify.toml`). HTTPS is on.
+- **Demo requests** use Netlify Forms. `public/__forms.html` is a hidden copy of the form that Netlify reads at deploy time. The page posts to it, and the thank-you message only shows once Netlify accepts the request. If sending fails, the form shows the contact email.
+- **Notifications:** submissions are stored under Forms → demo-request in the Netlify dashboard. Email notifications to kaimbryatech@gmail.com are configured there, not in code.
+- **Sign in:** the link stays hidden until `NEXT_PUBLIC_APP_SIGN_IN_URL` is set.
+- **Site address:** link previews use Netlify's `URL` at build time, so a custom domain is picked up automatically. `NEXT_PUBLIC_SITE_URL` overrides it.
+- **Search engines:** the site is `noindex` while it's a demonstration. Remove that in `src/app/layout.tsx` at the commercial launch.
 
 ## How it's put together
 
 | Path | What it holds |
 | --- | --- |
-| `src/content/site.ts` | All copy and configuration. Claims are checked against the app. |
-| `src/components/sections.tsx` | The homepage sections (server components, static HTML) |
+| `src/components/sections.tsx`, `blocks.tsx` | Page sections and shared blocks (server components, static HTML) |
 | `src/components/Header.tsx`, `GuestJourney.tsx`, `RoleSwitcher.tsx`, `DemoForm.tsx` | The only client components |
-| `public/enhance.js` | Reveals, the scroll progress for the convergence scene, and the hero tilt. About 2 KB. The page is complete without it. |
-| `src/app/globals.css` | Brand and motion tokens, and all styles, including the reduced-motion rules |
-| `assets/screens/` | Full-resolution app captures and `RECORD.md`, which lists the source page, date and use of each |
-| `scripts/build-images.mjs` | Turns the captures into responsive AVIF and WebP files plus a typed size list (`npm run images`) |
-| `scripts/build_art.py` | Builds the illustrations from the brochure's drawing code (`npm run art`) |
-| `scripts/verify.mjs` | Headless checks; see below |
+| `src/components/motion-features.ts` | framer-motion features, loaded after the page is interactive. Used only by the guest journey. |
+| `public/enhance.js` | About 2 KB: reveals, the scroll-driven convergence scene and the hero tilt. The page is complete without it. |
+| `src/app/globals.css` | Brand and motion tokens, all styles, reduced-motion rules |
+| `public/og.jpg` | The link-preview card shown by WhatsApp, email and social apps |
+| `assets/screens/` | Full-resolution app captures, with `RECORD.md` listing the source and use of each |
 
-Motion uses one set of tokens, defined in `globals.css`:
+## Scripts
 
-| Token | Duration | Used for |
-| --- | --- | --- |
-| fast | 180 ms | Hover and focus |
-| menu | 240 ms | Menus |
-| reveal | 500 ms, staggered by 70 ms | Section reveals |
-| swap | 400 ms | Tabs and steps |
+| Command | What it does |
+| --- | --- |
+| `npm run images` | Turns `assets/screens/` into responsive AVIF and WebP files |
+| `npm run art` | Builds the illustrations in `public/art/` |
+| `npm run og` | Rebuilds the link-preview card from the hero illustration |
+| `npm run verify` | Headless checks of the local build (run `npm run build` first) |
+| `npm run verify:live` | Read-only checks of the deployed site; never submits the form. Add a URL to check another address. |
 
-The ambient drift is 22 s. Only `transform` and `opacity` are animated.
+## Checks
 
-## Verification (15 October 2026)
+`npm run verify` serves `out/` from disk. On phone, tablet and desktop widths, with and without reduced motion, it checks:
+- no console errors or failed requests;
+- no horizontal overflow and no sections left hidden;
+- axe finds no WCAG 2.2 AA violations;
+- every internal link and anchor resolves;
+- keyboard use of the menus, guest-journey steps and role tabs;
+- demo form validation;
+- performance on a simulated phone, with a 175 KB budget for gzipped JavaScript, which fails the run if exceeded.
 
-`npm run verify` serves `out/` from disk and checks the site at 390, 768 and 1440 px, with and without reduced motion:
+`npm run verify:live` repeats the page, link, accessibility and placeholder checks against the live site. It also confirms Netlify has registered the demo form. Results are written to `qa/` (gitignored).
 
-- **Errors:** no console errors and no failed requests.
-- **Overflow:** no horizontal overflow at any width.
-- **Accessibility:** axe finds no WCAG 2.2 AA violations on the homepage (phone, tablet, desktop) or the demo page.
-- **Keyboard:** arrow keys, Home and End work on the guest-access steps and role tabs. Escape closes the mega menu and returns focus to its button.
-- **Mobile menu:** focus moves into the menu and Escape closes it.
-- **Demo form:** errors are announced, focus moves to the first problem, the success state appears, and the prototype note shows.
-- **Performance** (simulated phone, roughly Fast 4G with a 4× CPU slowdown; confirm with Lighthouse once deployed):
-  - largest contentful paint: about 0.9 s (the hero headline);
-  - layout shift: 0;
-  - first-load transfer: 294 KB in 16 requests;
-  - JavaScript: 143 KB gzipped, of which Next.js and React are about 113 KB.
-
-## Before launch: open items
+## Before the commercial launch
 
 | Item | Status |
 | --- | --- |
-| Demo requests | They go nowhere until `NEXT_PUBLIC_DEMO_ENDPOINT` is set. The form shows a visible prototype note until then. |
-| Sign in | The link stays hidden until `NEXT_PUBLIC_APP_SIGN_IN_URL` is set. |
-| Company pages | About, Contact, Privacy, Terms and the Company menu aren't built yet. They need company details. |
-| Platform and Solutions pages | Menu links point to the homepage sections until the dedicated pages exist. |
-| Search indexing | The site is set to `noindex` while it's a prototype. Remove that in `src/app/layout.tsx` at launch. |
-| Rollout facts | The credibility strip says "more than 190 homes" (anonymous). Confirm the wording before launch. |
-| Screens | They show the fictional "Mahoe Ridge" test community. The QR code in the guest pass is a test token that expires on 17 October 2026. |
+| Legal details | See `LEGAL-REVIEW.md`: the LLC's name, registration and address, governing law, data-protection obligations, retention period, plus a lawyer's review. |
+| App sign-in address | Needed before the Sign in link can appear. |
+| Custom domain | Still on the Netlify address. |
+| Search indexing | Remove `noindex` at launch. |
+| Naming the client | The rollout stays anonymous. Pyramid Point is named only with written permission. |
+| Screens | They show the fictional "Mahoe Ridge" test community. |

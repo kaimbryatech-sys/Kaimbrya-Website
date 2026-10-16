@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "art": "python3 scripts/build_art.py",
     "images": "node scripts/build-images.mjs",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "og": "node scripts/build-og.mjs",
+    "verify:live": "node scripts/verify-live.mjs"
   },
   "dependencies": {
     "framer-motion": "12.23.24",

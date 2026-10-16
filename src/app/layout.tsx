@@ -8,7 +8,23 @@ import "./globals.css";
 const sans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-plex-sans", display: "swap" });
 const serif = IBM_Plex_Serif({ subsets: ["latin"], weight: ["500"], style: ["normal", "italic"], variable: "--font-plex-serif", display: "swap" });
 
+// Netlify sets URL to the site's primary address at build time, so a custom domain
+// is picked up automatically; NEXT_PUBLIC_SITE_URL overrides it elsewhere.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.URL ?? "https://kaimbrya.netlify.app";
+const shareDescription =
+  "One connected platform for community finances, guest access, properties, maintenance and communication. Built for modern Jamaican communities.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    type: "website",
+    siteName: "Kaimbrya",
+    locale: "en_JM",
+    title: "Kaimbrya · Community management, reimagined",
+    description: shareDescription,
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Kaimbrya: community management, reimagined, with an illustrated gated community" }],
+  },
+  twitter: { card: "summary_large_image", title: "Kaimbrya · Community management, reimagined", description: shareDescription, images: ["/og.jpg"] },
   title: {
     default: "Kaimbrya · Community management software for Jamaica",
     template: "%s · Kaimbrya",
