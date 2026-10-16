@@ -6,3 +6,6 @@ next-env.d.ts
 .DS_Store
 qa/
 .env*.local
+
+# Brochure sources, PDFs and app demo-data scripts (local only; demo-accounts.txt holds passwords)
+/marketing/
