@@ -5,6 +5,8 @@ import { Scene, type SceneName } from "./Art";
 import { DesktopFrame, PanelFrame, PhoneFrame } from "./Frames";
 import { ArrowRight } from "./icons";
 import { Screen } from "./Screen";
+import { pricingConfig } from "@/content/pricing-config";
+import { formatUSD } from "@/lib/pricing";
 
 /** Fades and rises into view once (see public/enhance.js); `i` staggers siblings. */
 export function Reveal({ i = 0, className, children, id }: { i?: number; className?: string; children: ReactNode; id?: string }) {
@@ -185,6 +187,20 @@ export function CtaBand({ title, text, primary, secondary }: { title: string; te
         <Reveal i={1}>
           <Scene name="welcome" className="cta-art" position="50% 70%" />
         </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/** One-line pricing teaser that links to the calculator. Figures come from the pricing config. */
+export function PricingTeaser() {
+  return (
+    <section className="pricing-teaser" aria-label="Pricing">
+      <div className="wrap">
+        <p>
+          <strong>From {formatUSD(pricingConfig.baseCents)} a month</strong> for your whole community, plus {formatUSD(pricingConfig.standardRateCents)} per home.
+        </p>
+        <a href="/pricing/" className="link-arrow">Estimate your price <ArrowRight /></a>
       </div>
     </section>
   );

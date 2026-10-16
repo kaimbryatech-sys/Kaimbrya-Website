@@ -11,7 +11,7 @@ const mail = <a href={`mailto:${config.contactEmail}`}>{config.contactEmail}</a>
 
 export default function PrivacyPage() {
   return (
-    <DocPage eyebrow="Legal" title="Privacy policy" updated="15 October 2026"
+    <DocPage eyebrow="Legal" title="Privacy policy" updated="16 October 2026"
       lead="This policy explains what information the Kaimbrya marketing website collects, why, and what you can ask us to do with it.">
       <div className="prose">
         <p>
@@ -31,11 +31,17 @@ export default function PrivacyPage() {
           <li>your phone or WhatsApp number, if you choose to give it</li>
           <li>any message you write</li>
         </ul>
+        <p>
+          When you request a quote from the pricing page, we collect the same kind of details, plus your community&apos;s location
+          and its configuration if you give them. If you choose to include your estimate, we also receive the property classes,
+          numbers of homes and simulated rates you entered. The pricing calculator itself runs in your browser: nothing you type
+          into it is sent or stored unless you submit a quote request.
+        </p>
         <p>If you email us, we receive your email address and whatever your message contains.</p>
 
         <h2>How we use it</h2>
         <p>
-          We use these details to reply to you, arrange and prepare your demonstration, and follow up about Kaimbrya. We don&apos;t
+          We use these details to reply to you, arrange and prepare your demonstration or proposal, and follow up about Kaimbrya. We don&apos;t
           sell your information, and we don&apos;t use it for advertising.
         </p>
 

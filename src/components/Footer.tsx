@@ -23,6 +23,7 @@ export function Footer() {
             <h2 id="f-start">Get started</h2>
             <ul>
               <li><Link href="/demo/" prefetch={false}>Book a demo</Link></li>
+              <li><a href="/pricing/">Pricing</a></li>
               {config.appSignInUrl ? <li><a href={config.appSignInUrl}>Sign in</a></li> : null}
             </ul>
           </nav>

@@ -135,6 +135,7 @@ export function Header() {
               </div>
             </div>
           ))}
+          <a href="/pricing/" className="nav-link" aria-current={pathname.startsWith("/pricing") ? "page" : undefined}>Pricing</a>
         </nav>
 
         <div className="header-actions">
@@ -181,6 +182,10 @@ export function Header() {
               ))}
             </section>
           ))}
+          <a href="/pricing/" className="mobile-menu-link" onClick={() => setMobileOpen(false)}>
+            <strong>Pricing</strong>
+            <span>Estimate your community&apos;s price</span>
+          </a>
         </div>
         <div className="mobile-menu-foot">
           {config.appSignInUrl ? <a className="btn btn-secondary" href={config.appSignInUrl}>Sign in</a> : null}

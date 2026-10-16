@@ -11,7 +11,8 @@
     "images": "node scripts/build-images.mjs",
     "verify": "node scripts/verify.mjs",
     "og": "node scripts/build-og.mjs",
-    "verify:live": "node scripts/verify-live.mjs"
+    "verify:live": "node scripts/verify-live.mjs",
+    "test:pricing": "node --test scripts/pricing.test.mjs"
   },
   "dependencies": {
     "framer-motion": "12.23.24",

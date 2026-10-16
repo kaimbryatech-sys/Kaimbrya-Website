@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
-import { ArtStage, Composition, CtaBand, FaqList, FeatureRow, PageHero, Reveal, StepsFlow } from "@/components/blocks";
+import { ArtStage, Composition, CtaBand, FaqList, FeatureRow, PageHero, PricingTeaser, Reveal, StepsFlow } from "@/components/blocks";
 import { GuestJourney } from "@/components/GuestJourney";
 import { RoleSwitcher } from "@/components/RoleSwitcher";
 import { guestAccess, roles } from "@/content/site";
@@ -123,6 +123,8 @@ export default async function SolutionPage({ params }: Params) {
           <FaqList items={s.faq} />
         </div>
       </section>
+
+      <PricingTeaser />
 
       <CtaBand title={s.cta.title} text={s.cta.text} primary={demo} secondary={{ label: "Explore the platform", href: "/platform/" }} />
     </>

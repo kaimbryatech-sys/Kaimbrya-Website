@@ -22,17 +22,18 @@ npm run build      # static site in out/
 | Platform overview | `/platform/` (seven module sections with anchors, e.g. `#finance`) |
 | Communication and transparency | `/communication/` (four pillars and the rumour-to-facts story) |
 | Document library | `/library/` |
+| Pricing | `/pricing/` (estimate simulator and quote request; see `PRICING-QA.md`) |
 | Solutions | `/solutions/gated-communities/`, `/strata-and-hoas/`, `/property-managers/`, `/developers/` |
 | Book a demo | `/demo/` (`?type=gated` and similar pre-select the organisation type) |
 | About, Contact | `/about/`, `/contact/` |
 | Privacy policy, Terms of use | `/privacy/`, `/terms/` |
 
-Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`, `communication.ts`); the legal and company pages are in `src/app/<page>/page.tsx`.
+Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`, `communication.ts`). Every price, rate and pricing disclaimer lives in `src/content/pricing-config.ts`; the arithmetic is in `src/lib/pricing.ts`; the legal and company pages are in `src/app/<page>/page.tsx`.
 
 ## Hosting and the demo form
 
 - **Netlify** builds with `npm run build` and publishes `out/` (`netlify.toml`). HTTPS is on.
-- **Demo requests** use Netlify Forms. `public/__forms.html` is a hidden copy of the form that Netlify reads at deploy time. The page posts to it, and the thank-you message only shows once Netlify accepts the request. If sending fails, the form shows the contact email.
+- **Demo and quote requests** use Netlify Forms (`demo-request` and `pricing-inquiry`). `public/__forms.html` is a hidden copy of the form that Netlify reads at deploy time. The page posts to it, and the thank-you message only shows once Netlify accepts the request. If sending fails, the form shows the contact email.
 - **Notifications:** submissions are stored under Forms → demo-request in the Netlify dashboard. Email notifications to kaimbryatech@gmail.com are configured there, not in code.
 - **Sign in:** the link stays hidden until `NEXT_PUBLIC_APP_SIGN_IN_URL` is set.
 - **Site address:** link previews use Netlify's `URL` at build time, so a custom domain is picked up automatically. `NEXT_PUBLIC_SITE_URL` overrides it.
@@ -57,6 +58,7 @@ Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`, `communi
 | `npm run images` | Turns `assets/screens/` into responsive AVIF and WebP files |
 | `npm run art` | Builds the illustrations in `public/art/` |
 | `npm run og` | Rebuilds the link-preview card from the hero illustration |
+| `npm run test:pricing` | Calculation tests for the pricing engine (Node's test runner, no extra dependencies) |
 | `npm run verify` | Headless checks of the local build (run `npm run build` first) |
 | `npm run verify:live` | Read-only checks of the deployed site; never submits the form. Add a URL to check another address. |
 

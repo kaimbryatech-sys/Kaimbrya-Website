@@ -5,7 +5,7 @@ import { chromium } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 const BASE = (process.argv[2] ?? "https://kaimbrya.netlify.app").replace(/\/$/, "");
-const PAGES = ["/", "/platform/", "/solutions/gated-communities/", "/solutions/strata-and-hoas/", "/solutions/property-managers/", "/solutions/developers/", "/communication/", "/library/", "/about/", "/contact/", "/privacy/", "/terms/", "/demo/"];
+const PAGES = ["/", "/platform/", "/solutions/gated-communities/", "/solutions/strata-and-hoas/", "/solutions/property-managers/", "/solutions/developers/", "/communication/", "/library/", "/pricing/", "/about/", "/contact/", "/privacy/", "/terms/", "/demo/"];
 const VIEWPORTS = { mobile: { width: 390, height: 844, isMobile: true, hasTouch: true }, desktop: { width: 1440, height: 900 } };
 const report = { base: BASE, problems: [], pages: {}, links: { checked: 0, broken: [] }, interactions: {} };
 await mkdir("qa/live", { recursive: true });

@@ -148,6 +148,58 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
   await page.screenshot({ path: path.join(QA, "desktop-demo-success.png") });
   const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
   report.a11y["desktop-demo"] = axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target?.join(" ") }));
+
+  // Pricing simulator: arithmetic shown in the page, presets, validation, and the quote request payload.
+  const amount = () => page.locator(".summary-amount").innerText().then((t) => t.replace(/\s+/g, ""));
+  await page.goto(`${ORIGIN}/pricing/`, { waitUntil: "networkidle" });
+  const pr = (report.interactions.pricing = {});
+  pr.default190 = await amount();
+  for (const [n, key] of [["50", "units50"], ["500", "units500"]]) { await page.fill("#pricing-units", n); pr[key] = await amount(); }
+  await page.fill("#pricing-units", "12.5");
+  pr.decimalRejected = (await page.locator("#units-error").count()) === 1 && (await page.locator(".summary-amount").count()) === 0;
+  await page.fill("#pricing-units", "-3");
+  pr.negativeRejected = (await page.locator("#units-error").count()) === 1;
+  await page.fill("#pricing-units", "190");
+  await page.getByRole("button", { name: /Premium classified development/ }).click();
+  pr.replaceWarning = (await page.locator(".replace-confirm").count()) === 1;
+  await page.getByRole("button", { name: "Replace", exact: true }).click();
+  pr.premium = await amount();
+  pr.premiumDifference = (await page.locator(".comparison-diff dd").innerText()).trim();
+  pr.premiumStandard = (await page.locator(".comparison dl div").first().locator("dd").innerText()).trim();
+  const ruby = page.locator(".class-card").first();
+  await ruby.locator("select").nth(1).selectOption("Studio");
+  await ruby.locator("select").nth(0).selectOption("Apartment");
+  pr.bedroomsTypeNoEffect = (await amount()) === pr.premium;
+  await page.getByRole("button", { name: /Add a property class/ }).click();
+  const added = page.locator(".class-card").last();
+  await added.locator("input").first().fill("ruby");
+  pr.duplicateNameError = (await added.locator(".field-error").innerText()).includes("different name");
+  await added.getByRole("button", { name: /Remove/ }).click();
+  pr.classesAfterRemove = await page.locator(".class-card").count();
+  await page.getByRole("button", { name: /not sure of my community/ }).click();
+  pr.notSureStandard = await amount();
+  await page.screenshot({ path: path.join(QA, "desktop-pricing-notsure.png"), fullPage: true });
+  await page.getByRole("button", { name: /Request my quote/ }).click();
+  pr.quoteErrors = await page.locator("#quote .field-error").count();
+  let posted = "";
+  page.on("request", (r) => { if (r.method() === "POST" && r.url().endsWith("/__forms.html")) posted = r.postData() ?? ""; });
+  await page.fill("#q-name", "Andrea Campbell");
+  await page.fill("#q-email", "andrea@mahoeridge.example");
+  await page.fill("#q-org", "Mahoe Ridge");
+  await page.getByRole("button", { name: /Request my quote/ }).click();
+  await page.waitForSelector("#quote .success", { timeout: 5000 });
+  pr.quoteSuccess = await page.locator("#quote .success h2").innerText();
+  const body = new URLSearchParams(posted);
+  pr.quotePayload = { formName: body.get("form-name"), homes: body.get("homes"), configuration: body.get("configuration"), rateCard: body.get("rate-card"), scenarioHasTotal: (body.get("scenario") ?? "").includes("Monthly estimate: US$245.00"), markedNotQuotation: (body.get("request-type") ?? "").includes("not an accepted quotation") };
+  await scrollThrough(page);
+  await page.waitForTimeout(900);
+  const pAxe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  report.a11y["desktop-pricing-after-use"] = pAxe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target?.join(" ") }));
+  const expected = { default190: "US$245.00/month", units50: "US$175.00/month", units500: "US$400.00/month", premium: "US$269.00/month", premiumDifference: "+US$24.00/month", premiumStandard: "US$245.00/month", notSureStandard: "US$245.00/month" };
+  for (const [k, v] of Object.entries(expected)) if (pr[k] !== v) report.problems.push(`pricing: ${k} = ${pr[k]}, expected ${v}`);
+  for (const k of ["decimalRejected", "negativeRejected", "replaceWarning", "bedroomsTypeNoEffect", "duplicateNameError"]) if (pr[k] !== true) report.problems.push(`pricing: ${k} failed`);
+  if (pr.classesAfterRemove !== 3) report.problems.push(`pricing: ${pr.classesAfterRemove} classes after remove, expected 3`);
+  if (pr.quotePayload.formName !== "pricing-inquiry" || pr.quotePayload.homes !== "190" || !pr.quotePayload.scenarioHasTotal || !pr.quotePayload.markedNotQuotation) report.problems.push(`pricing: quote payload ${JSON.stringify(pr.quotePayload)}`);
   await context.close();
 
   const mobile = await browser.newContext({ ...VIEWPORTS.mobile });
@@ -168,7 +220,7 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
 
 // Inner pages: full-page screenshots, overflow and accessibility at phone and desktop widths.
 {
-  const PAGES = ["/platform/", "/solutions/gated-communities/", "/solutions/strata-and-hoas/", "/solutions/property-managers/", "/solutions/developers/", "/communication/", "/library/", "/about/", "/contact/", "/privacy/", "/terms/"];
+  const PAGES = ["/platform/", "/solutions/gated-communities/", "/solutions/strata-and-hoas/", "/solutions/property-managers/", "/solutions/developers/", "/communication/", "/library/", "/pricing/", "/about/", "/contact/", "/privacy/", "/terms/"];
   for (const [name, opts] of [["mobile", { ...VIEWPORTS.mobile, deviceScaleFactor: 1 }], ["desktop", VIEWPORTS.desktop]]) {
     const context = await browser.newContext(opts);
     await serve(context);
