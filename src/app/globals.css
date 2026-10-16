@@ -770,6 +770,31 @@ section:has(.guest-grid) { overflow-x: clip; }
 .pricing-teaser p { font-size: 1.0625rem; }
 .pricing-teaser strong { color: var(--color-deep); }
 
+/* Community domain (pricing page): free setup, kept apart from the subscription estimate */
+.domain { background: #f3f8fa; }
+.domain-grid { display: grid; gap: 40px; align-items: start; }
+@media (min-width: 1024px) { .domain-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; } }
+.domain-points { margin-top: 24px; display: grid; gap: 12px; }
+.domain-points li { position: relative; padding-left: 30px; line-height: 1.55; color: var(--color-muted); }
+.domain-points li::before { content: ""; position: absolute; left: 0; top: 0.2em; width: 18px; height: 18px; border-radius: 50%; background: rgba(31, 95, 117, 0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M4 7.2l2 2 4-4.4' fill='none' stroke='%231f5f75' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px no-repeat; }
+.domain-points strong { color: var(--color-ink); font-weight: 600; }
+.domain-costs { margin-top: 24px; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px var(--color-line); }
+.domain-costs div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 16px; border-bottom: 1px solid var(--color-line); }
+.domain-costs div:last-child { border-bottom: 0; }
+.domain-costs dt { min-width: 0; }
+.domain-costs dd { flex-shrink: 0; font-weight: 600; text-align: right; }
+.cost-free { color: #1d6b45; }
+.domain-question { border: 0; padding: 0; margin: 0; min-width: 0; }
+.domain-options { margin-top: 12px; display: grid; gap: 10px; }
+.domain-field, .domain-card .unsure-note { margin-top: 20px; }
+.domain-foot { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 0.9375rem; color: var(--color-muted); }
+.summary-domain { margin-top: 22px; }
+.summary-subtitle { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 12px; font-weight: 600; }
+.summary-subtitle span { font-size: 0.8125rem; font-weight: 400; color: var(--color-muted); }
+.summary-domain .breakdown { margin-top: 8px; }
+.summary-domain .link-btn { margin-top: 6px; }
+.domain-recap-value { margin-top: 6px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; overflow-wrap: anywhere; }
+
 @keyframes pricing-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes pricing-tick { from { opacity: 0.4; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {

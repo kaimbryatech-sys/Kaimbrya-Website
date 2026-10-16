@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { pricingConfig as cfg, type Preset, type PropertyClassDraft } from "@/content/pricing-config";
 import { config as site } from "@/content/site";
+import { normalizeDomain, type DomainCheck } from "@/lib/domain";
 import { estimate, formatJMD, formatUSD, parseUnits, standardEstimate, validateClasses, type Estimate } from "@/lib/pricing";
 import { Alert, ArrowRight, Check } from "./icons";
 
@@ -12,6 +13,9 @@ import { Alert, ArrowRight, Check } from "./icons";
  */
 
 type Mode = "standard" | "custom";
+type DomainChoice = "" | (typeof cfg.domain.choices)[number]["id"];
+/** The domain question keeps both typed names, so switching answers never loses what was entered. */
+type DomainAnswer = { choice: DomainChoice; own: string; wanted: string };
 type ClassRow = { id: string; name: string; type: string; bedrooms: string; unitsText: string; rateCents: number; description: string; showDescription: boolean };
 
 const NOT_SPECIFIED = "Not specified";
@@ -33,6 +37,13 @@ export function PricingSimulator() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [unsureNote, setUnsureNote] = useState(false);
   const [freshId, setFreshId] = useState<string | null>(null);
+  // The domain question sits apart from the estimate: it never changes the price, and the calculator's
+  // reset and presets leave it alone.
+  const [domain, setDomain] = useState<DomainAnswer>({ choice: "", own: "", wanted: "" });
+  const [domainTouched, setDomainTouched] = useState(false);
+  const domainText = domain.choice === "own" ? domain.own : domain.choice === "new" ? domain.wanted : "";
+  const domainCheck = useMemo(() => normalizeDomain(domainText), [domainText]);
+  const answerDomain = (next: DomainAnswer) => { if (next.choice !== domain.choice) setDomainTouched(false); setDomain(next); };
 
   // ── Calculation ─────────────────────────────────────────────────────────
   const standardUnits = useMemo(() => parseUnits(unitsText, cfg.maxUnitsPerClass), [unitsText]);
@@ -315,7 +326,9 @@ export function PricingSimulator() {
         </div>
       </section>
 
-      <QuoteForm scenario={scenario} defaultHomes={est?.totalUnits ?? 0} suggestedConfig={mode === "standard" ? "Standard homes" : est?.usesIllustrativeRates ? "Classified development (custom classes)" : (est?.classes.length ?? 0) > 1 ? "Mixed property types" : ""} />
+      <DomainSetup answer={domain} onChange={answerDomain} check={domainCheck} showError={domainTouched} onBlur={() => setDomainTouched(true)} />
+
+      <QuoteForm domain={domain} domainCheck={domainCheck} onDomainInvalid={() => setDomainTouched(true)} scenario={scenario} defaultHomes={est?.totalUnits ?? 0} suggestedConfig={mode === "standard" ? "Standard homes" : est?.usesIllustrativeRates ? "Classified development (custom classes)" : (est?.classes.length ?? 0) > 1 ? "Mixed property types" : ""} />
     </>
   );
 }
@@ -370,6 +383,15 @@ function Summary({ est, mode, excluded }: { est: Estimate | null; mode: Mode; ex
         <p className="summary-empty">Enter the number of homes to see an estimate.</p>
       )}
 
+      <div className="summary-domain">
+        <p id="summary-domain-title" className="summary-subtitle">Community domain <span>Not part of the monthly estimate</span></p>
+        <ul className="breakdown" aria-labelledby="summary-domain-title">
+          <li><span>Community domain setup</span><span className="cost-free">Free</span></li>
+          <li><span>Domain purchase, if required <small>Paid to the registrar, and renewed each year</small></span><span>Registrar&apos;s price</span></li>
+        </ul>
+        <a href="#domain" className="link-btn">About your community&apos;s domain</a>
+      </div>
+
       <div className="disclaimer" role="note" aria-labelledby="disclaimer-title">
         <p id="disclaimer-title" className="disclaimer-title">{cfg.copy.disclaimerTitle}</p>
         <p>{cfg.copy.disclaimer}</p>
@@ -417,19 +439,125 @@ function describeScenario(mode: Mode, est: Estimate | null, classes: ClassRow[],
   return { text: lines.join("\n"), json };
 }
 
+// ── Community domain ────────────────────────────────────────────────────────
+function DomainSetup({ answer, onChange, check, showError, onBlur }: { answer: DomainAnswer; onChange: (a: DomainAnswer) => void; check: DomainCheck; showError: boolean; onBlur: () => void }) {
+  const field = answer.choice === "own" || answer.choice === "new" ? answer.choice : null;
+  const invalid = field !== null && showError && !check.ok;
+  const clear = () => {
+    onChange({ ...answer, choice: "" });
+    requestAnimationFrame(() => document.querySelector<HTMLInputElement>('input[name="domain-choice"]')?.focus());
+  };
+  return (
+    <section id="domain" className="section domain" aria-labelledby="domain-title">
+      <div className="wrap domain-grid">
+        <div>
+          <p className="eyebrow">Community domain</p>
+          <h2 id="domain-title" className="title" style={{ marginTop: 16 }}>Your community. Your domain. Setup on us.</h2>
+          <p className="lead" style={{ marginTop: 18 }}>Give your community its own professional web address with Kaimbrya.</p>
+          <ul className="domain-points">
+            <li><strong>Already have a domain?</strong> We&apos;ll help you connect it for free.</li>
+            <li><strong>Need a new one?</strong> We&apos;ll help you find, purchase and set it up at no additional charge.</li>
+            <li><strong>Domain setup is always free.</strong> You only pay for purchasing and renewing your domain, where applicable.</li>
+          </ul>
+          <dl className="domain-costs" aria-label="What a community domain costs">
+            {cfg.domain.costs.map((c) => (
+              <div key={c.item}><dt>{c.item}</dt><dd className={c.cost === "Free" ? "cost-free" : undefined}>{c.cost}</dd></div>
+            ))}
+          </dl>
+          <p className="field-help" style={{ marginTop: 16 }}>
+            We&apos;ll guide you through it during onboarding, and confirm the timing and any registrar cost with you before anything is bought or changed. The domain stays your community&apos;s.
+          </p>
+        </div>
+
+        <div className="form-card domain-card">
+          <fieldset className="domain-question">
+            <legend className="field-label">Do you already have a domain for your community? <span className="opt">(optional)</span></legend>
+            <div className="domain-options">
+              {cfg.domain.choices.map((c) => (
+                <label key={c.id} className="mode-option" data-checked={answer.choice === c.id}>
+                  <input type="radio" name="domain-choice" value={c.id} checked={answer.choice === c.id} onChange={() => onChange({ ...answer, choice: c.id })} />
+                  <span className="mode-label">{c.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {field ? (
+            <div className="field mode-panel domain-field" key={field}>
+              <label htmlFor="domain-name">
+                {field === "own" ? "What's your community's domain name?" : "What domain name would you prefer?"} <span className="opt">(optional)</span>
+              </label>
+              <input
+                id="domain-name"
+                value={field === "own" ? answer.own : answer.wanted}
+                placeholder="yourcommunity.com"
+                inputMode="url"
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                maxLength={300}
+                onChange={(e) => onChange(field === "own" ? { ...answer, own: e.target.value } : { ...answer, wanted: e.target.value })}
+                onBlur={onBlur}
+                aria-invalid={invalid || undefined}
+                aria-describedby={invalid ? "domain-error domain-help" : "domain-help"}
+              />
+              {invalid && !check.ok ? <p id="domain-error" className="field-error"><Alert width={16} height={16} />{check.error}</p> : null}
+              <p id="domain-help" className="field-help">
+                {field === "own"
+                  ? "We'll help you work out the best way to connect it. You keep ownership, and renewals stay with you."
+                  : "We'll check it's available and confirm the price with you before anything is bought. Entering a name here doesn't reserve it."}
+              </p>
+            </div>
+          ) : null}
+          {answer.choice === "unsure" ? <p className="unsure-note mode-panel">That&apos;s fine. We&apos;ll guide you through it during onboarding.</p> : null}
+
+          <p className="domain-foot">
+            {answer.choice ? (
+              <>Your answer is included when you request a quote. <button type="button" className="link-btn" onClick={clear}>Clear my answer</button></>
+            ) : (
+              "You can skip this and still request a quote."
+            )}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** What the team receives about the domain, whether or not the estimate is attached. */
+function describeDomain(a: DomainAnswer, check: DomainCheck) {
+  const choice = cfg.domain.choices.find((c) => c.id === a.choice);
+  const name = choice && a.choice !== "unsure" && check.ok ? check.value : "";
+  const recap = !choice
+    ? "Not answered. Domain setup is free either way."
+    : a.choice === "own" ? `We already have a domain${name ? `: ${name}` : ""}`
+    : a.choice === "new" ? `We need help getting one${name ? ` (preferred: ${name})` : ""}`
+    : "Not sure. We'd like some guidance.";
+  const lines = [
+    `Community domain: ${choice?.status ?? "Not answered"}${name ? ` | ${a.choice === "own" ? "existing" : "preferred"}: ${name}` : ""}`,
+    `Domain assistance: ${choice?.help ?? "Not answered"}`,
+    "Domain setup: free (any registrar purchase and renewal is paid by the community)",
+  ];
+  return { status: choice?.status ?? "Not answered", help: choice?.help ?? "Not answered", name, recap, lines };
+}
+
 // ── Quote form ──────────────────────────────────────────────────────────────
 type QField = "name" | "email" | "org" | "location" | "phone" | "homes" | "configuration" | "message";
 const ORDER: QField[] = ["name", "email", "org", "location", "phone", "homes", "configuration", "message"];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-function QuoteForm({ scenario, defaultHomes, suggestedConfig }: { scenario: { text: string; json: string }; defaultHomes: number; suggestedConfig: string }) {
+function QuoteForm({ domain, domainCheck, onDomainInvalid, scenario, defaultHomes, suggestedConfig }: { domain: DomainAnswer; domainCheck: DomainCheck; onDomainInvalid: () => void; scenario: { text: string; json: string }; defaultHomes: number; suggestedConfig: string }) {
   const [values, setValues] = useState<Record<QField, string>>({ name: "", email: "", org: "", location: "", phone: "", homes: "", configuration: "", message: "" });
   const [homesEdited, setHomesEdited] = useState(false);
   const [attach, setAttach] = useState(true);
   const [errors, setErrors] = useState<Partial<Record<QField, string>>>({});
   const [state, setState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
+  const [tried, setTried] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const doneRef = useRef<HTMLHeadingElement>(null);
+  const dom = describeDomain(domain, domainCheck);
+  const sentScenario = scenario.text ? [scenario.text, ...dom.lines].join("\n") : "";
 
   // Follow the calculator until the visitor types their own figure.
   const homesValue = homesEdited ? values.homes : defaultHomes > 0 ? String(defaultHomes) : "";
@@ -461,8 +589,11 @@ function QuoteForm({ scenario, defaultHomes, suggestedConfig }: { scenario: { te
     if (state === "sending") return;
     const found = validate();
     setErrors(found);
+    setTried(true);
     const first = ORDER.find((f) => found[f]);
     if (first) { formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus(); return; }
+    // The domain is optional, but a name that's been typed must be a real domain format.
+    if (!domainCheck.ok) { onDomainInvalid(); document.getElementById("domain-name")?.focus(); return; }
     const honeypot = (formRef.current?.elements.namedItem("website") as HTMLInputElement | null)?.value;
     setState("sending");
     try {
@@ -473,7 +604,8 @@ function QuoteForm({ scenario, defaultHomes, suggestedConfig }: { scenario: { te
           "request-type": "Pricing inquiry - website estimate, not an accepted quotation",
           name: clean(values.name, 120), email: values.email.trim(), org: clean(values.org, 160), location: clean(values.location, 160),
           phone: values.phone.trim(), homes: homesValue.replace(/[,\s]/g, ""), configuration: configValue, message: values.message.slice(0, 1000),
-          scenario: attach ? scenario.text : "(not attached)", "scenario-json": attach ? scenario.json.slice(0, 6000) : "",
+          "domain-status": dom.status, "domain-name": dom.name, "domain-help": dom.help,
+          scenario: attach ? sentScenario : "(not attached)", "scenario-json": attach ? scenario.json.slice(0, 6000) : "",
           "rate-card": cfg.version, source: window.location.href.split("#")[0] ?? "",
         });
         const res = await fetch("/__forms.html", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
@@ -530,15 +662,23 @@ function QuoteForm({ scenario, defaultHomes, suggestedConfig }: { scenario: { te
                 {error("configuration")}
               </div>
               <div className="field field--full"><label htmlFor="q-message">Anything else we should know? <span className="opt">(optional)</span></label><textarea {...field("message")} value={values.message} rows={4} maxLength={1200} />{error("message")}</div>
+              <div className="field field--full domain-recap">
+                <p className="field-label">Community domain <span className="opt">(optional)</span></p>
+                <p className="domain-recap-value">
+                  <span>{dom.recap}</span>
+                  <a href="#domain" className="link-btn">{domain.choice ? "Change" : "Answer"}<span className="sr-only"> the domain question</span></a>
+                </p>
+                {tried && !domainCheck.ok ? <p className="field-error" role="alert"><Alert width={16} height={16} />Check the domain name above, or clear it. {domainCheck.error}</p> : null}
+              </div>
               <div className="field field--full attach">
                 <label className="check">
                   <input type="checkbox" checked={attach} onChange={(e) => setAttach(e.target.checked)} />
                   <span>Include my pricing estimate with this request</span>
                 </label>
-                {attach && scenario.text ? (
+                {attach && sentScenario ? (
                   <details className="attach-preview">
                     <summary>What we&apos;ll receive</summary>
-                    <pre>{scenario.text}</pre>
+                    <pre>{sentScenario}</pre>
                   </details>
                 ) : null}
               </div>

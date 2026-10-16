@@ -12,6 +12,7 @@
     "verify": "node scripts/verify.mjs",
     "og": "node scripts/build-og.mjs",
     "verify:live": "node scripts/verify-live.mjs",
+    "test": "node --test scripts/pricing.test.mjs scripts/domain.test.mjs",
     "test:pricing": "node --test scripts/pricing.test.mjs"
   },
   "dependencies": {

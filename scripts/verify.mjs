@@ -183,16 +183,35 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
   await page.screenshot({ path: path.join(QA, "desktop-pricing-notsure.png"), fullPage: true });
   await page.getByRole("button", { name: /Request my quote/ }).click();
   pr.quoteErrors = await page.locator("#quote .field-error").count();
+  // Community domain: always free, never changes the estimate, optional, checked, and carried into the request.
+  const d = (pr.domain = {});
+  d.summaryFree = (await page.locator(".summary-domain .cost-free").innerText()).trim();
+  await page.getByLabel("Not sure. We'd like some guidance.").check();
+  d.unsureNoField = (await page.locator("#domain-name").count()) === 0;
+  await page.getByLabel("Yes, we already have a domain").check();
+  await page.fill("#domain-name", "mahoe ridge");
+  await page.locator("#domain-name").blur();
+  d.invalidShown = (await page.locator("#domain-error").count()) === 1;
+  await page.getByLabel("No, we need help getting one").check();
+  d.preferredLabel = (await page.locator('label[for="domain-name"]').innerText()).includes("prefer");
+  await page.getByLabel("Yes, we already have a domain").check();
+  d.keepsTypedName = (await page.inputValue("#domain-name")) === "mahoe ridge";
+  d.estimateUnchanged = (await amount()) === pr.notSureStandard;
+  await page.screenshot({ path: path.join(QA, "desktop-pricing-domain.png"), fullPage: true });
   let posted = "";
   page.on("request", (r) => { if (r.method() === "POST" && r.url().endsWith("/__forms.html")) posted = r.postData() ?? ""; });
   await page.fill("#q-name", "Andrea Campbell");
   await page.fill("#q-email", "andrea@mahoeridge.example");
   await page.fill("#q-org", "Mahoe Ridge");
   await page.getByRole("button", { name: /Request my quote/ }).click();
+  await page.waitForTimeout(300);
+  d.invalidBlocksRequest = (await page.evaluate(() => document.activeElement?.id)) === "domain-name" && posted === "" && (await page.locator("#quote .success").count()) === 0;
+  await page.fill("#domain-name", "https://Portal.MahoeRidge.com.jm/");
+  await page.getByRole("button", { name: /Request my quote/ }).click();
   await page.waitForSelector("#quote .success", { timeout: 5000 });
   pr.quoteSuccess = await page.locator("#quote .success h2").innerText();
   const body = new URLSearchParams(posted);
-  pr.quotePayload = { formName: body.get("form-name"), homes: body.get("homes"), configuration: body.get("configuration"), rateCard: body.get("rate-card"), scenarioHasTotal: (body.get("scenario") ?? "").includes("Monthly estimate: US$245.00"), markedNotQuotation: (body.get("request-type") ?? "").includes("not an accepted quotation") };
+  pr.quotePayload = { formName: body.get("form-name"), homes: body.get("homes"), configuration: body.get("configuration"), rateCard: body.get("rate-card"), scenarioHasTotal: (body.get("scenario") ?? "").includes("Monthly estimate: US$245.00"), markedNotQuotation: (body.get("request-type") ?? "").includes("not an accepted quotation"), domainStatus: body.get("domain-status"), domainName: body.get("domain-name"), domainHelp: body.get("domain-help"), scenarioHasDomain: (body.get("scenario") ?? "").includes("Domain setup: free") };
   await scrollThrough(page);
   await page.waitForTimeout(900);
   const pAxe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
@@ -201,6 +220,9 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
   for (const [k, v] of Object.entries(expected)) if (pr[k] !== v) report.problems.push(`pricing: ${k} = ${pr[k]}, expected ${v}`);
   for (const k of ["decimalRejected", "negativeRejected", "replaceWarning", "bedroomsTypeNoEffect", "duplicateNameError"]) if (pr[k] !== true) report.problems.push(`pricing: ${k} failed`);
   if (pr.classesAfterRemove !== 3) report.problems.push(`pricing: ${pr.classesAfterRemove} classes after remove, expected 3`);
+  for (const k of ["unsureNoField", "invalidShown", "preferredLabel", "keepsTypedName", "estimateUnchanged", "invalidBlocksRequest"]) if (d[k] !== true) report.problems.push(`pricing domain: ${k} failed`);
+  if (d.summaryFree !== "Free") report.problems.push(`pricing domain: summary shows ${d.summaryFree}`);
+  if (pr.quotePayload.domainStatus !== "Already has a domain" || pr.quotePayload.domainName !== "portal.mahoeridge.com.jm" || pr.quotePayload.domainHelp !== "Help connecting an existing domain" || !pr.quotePayload.scenarioHasDomain) report.problems.push(`pricing domain: payload ${JSON.stringify(pr.quotePayload)}`);
   if (pr.quotePayload.formName !== "pricing-inquiry" || pr.quotePayload.homes !== "190" || !pr.quotePayload.scenarioHasTotal || !pr.quotePayload.markedNotQuotation) report.problems.push(`pricing: quote payload ${JSON.stringify(pr.quotePayload)}`);
   await context.close();
 
