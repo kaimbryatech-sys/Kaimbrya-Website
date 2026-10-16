@@ -1,7 +1,6 @@
-// Progressive enhancement for the marketing site (no framework, ~2 KB).
+// Progressive enhancement for the marketing site (no framework, under 2 KB).
 // 1. Reveal-on-scroll for [data-reveal]
-// 2. Scroll progress (--p, 0 → 1) for [data-scroll-progress] sections (signature B)
-// 3. Gentle pointer tilt for [data-tilt] inside [data-tilt-zone] (hero, mouse only)
+// 2. Gentle pointer tilt for [data-tilt] inside [data-tilt-zone] (hero, mouse only)
 // Without this script the page is complete and fully visible; it only adds motion.
 (function () {
   var root = document.documentElement;
@@ -51,31 +50,7 @@
     window.addEventListener("resize", onSweep);
   }
 
-  // 2 · Scroll progress: --p goes 0 → 1 while a tall section scrolls past its
-  // sticky stage. Reversible by construction; one rAF-throttled passive listener.
-  var tracked = Array.prototype.slice.call(document.querySelectorAll("[data-scroll-progress]"));
-  if (tracked.length) {
-    var queued = false;
-    var update = function () {
-      queued = false;
-      var h = window.innerHeight;
-      tracked.forEach(function (el) {
-        var r = el.getBoundingClientRect();
-        if (r.bottom < -h || r.top > 2 * h) return; // far off screen: nothing to do
-        var span = r.height - h;
-        var p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 1;
-        el.style.setProperty("--p", p.toFixed(4));
-        var stage = el.firstElementChild;
-        if (stage) stage.setAttribute("data-after", p > 0.5 ? "true" : "false");
-      });
-    };
-    var onScroll = function () { if (!queued) { queued = true; requestAnimationFrame(update); } };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    update();
-  }
-
-  // 3 · Tilt: at most ±3° / ±2°, mouse pointers only, settles back on leave.
+  // 2 · Tilt: at most ±3° / ±2°, mouse pointers only, settles back on leave.
   var fine = window.matchMedia("(hover: hover) and (pointer: fine)");
   Array.prototype.forEach.call(document.querySelectorAll("[data-tilt-zone]"), function (zone) {
     var target = zone.querySelector("[data-tilt]");

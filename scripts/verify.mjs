@@ -40,7 +40,7 @@ const VIEWPORTS = {
   tablet: { viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1, hasTouch: true },
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
 };
-const SECTIONS = ["main", "platform", "finance", "guest-access", "roles", "operations", "community", "solutions"];
+const SECTIONS = ["main", "story", "platform", "finance", "guest-access", "roles", "operations", "community", "solutions"];
 
 const report = { problems: [], overflow: {}, a11y: {}, perf: {}, interactions: {} };
 const browser = await chromium.launch();
@@ -72,8 +72,10 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
     await scrollThrough(page);
     report.overflow[tag] = await page.evaluate(() => {
       const w = document.documentElement.clientWidth;
-      const wide = [...document.querySelectorAll("body *")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.right > w + 1 || r.left < -1) && getComputedStyle(el).position !== "fixed"; })
-        .filter((el) => !el.closest(".hero-art, .conv-frags, [aria-hidden='true']"))
+      // An element clipped by an on-screen ancestor (overflow hidden/clip) can't widen the page.
+      const clipped = (el) => { for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) { if (/hidden|clip/.test(getComputedStyle(n).overflowX)) { const r = n.getBoundingClientRect(); if (r.left >= -1 && r.right <= w + 1) return true; } } return false; };
+      const wide = [...document.querySelectorAll("body *")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.right > w + 1 || r.left < -1) && getComputedStyle(el).position !== "fixed" && !clipped(el); })
+        .filter((el) => !el.closest(".hero-art, .conv-frags, .story-stage, [aria-hidden='true']"))
         .slice(0, 6).map((el) => `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 40)} ${Math.round(el.getBoundingClientRect().left)}→${Math.round(el.getBoundingClientRect().right)}`);
       return { scrollWidth: document.documentElement.scrollWidth, clientWidth: w, offenders: wide };
     });
@@ -83,16 +85,16 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
       await page.waitForTimeout(700);
       await page.screenshot({ path: path.join(QA, `${tag}-${String(i).padStart(2, "0")}-${id}.png`) });
     }
-    // Signature B at three points of its scroll (pinned only on desktop with motion).
+    // The signature story at three points of its scroll (pinned whenever motion is allowed).
     if (name === "desktop" && reducedMotion === "no-preference") {
       for (const p of [0.05, 0.5, 0.95]) {
         await page.evaluate((p) => {
-          const el = document.getElementById("platform");
+          const el = document.getElementById("story");
           const top = el.getBoundingClientRect().top + scrollY;
           scrollTo({ top: top + (el.offsetHeight - innerHeight) * p, behavior: "instant" });
         }, p);
         await page.waitForTimeout(400);
-        await page.screenshot({ path: path.join(QA, `${tag}-conv-${Math.round(p * 100)}.png`) });
+        await page.screenshot({ path: path.join(QA, `${tag}-story-${Math.round(p * 100)}.png`) });
       }
     }
     await page.evaluate(() => scrollTo(0, document.body.scrollHeight));

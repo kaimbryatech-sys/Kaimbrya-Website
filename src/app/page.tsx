@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PricingTeaser } from "@/components/blocks";
+import { SignatureStory } from "@/components/SignatureStory";
 import { Audiences, Community, Convergence, Credibility, FinalCta, Finance, GuestAccess, Hero, Operations, Roles } from "@/components/sections";
 
 export const metadata: Metadata = {
@@ -10,6 +11,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <SignatureStory />
       <Credibility />
       <Convergence />
       <Finance />

@@ -106,7 +106,7 @@ const FRAGMENTS = [
 
 export function Convergence() {
   return (
-    <section id="platform" className="conv on-dark dots" data-scroll-progress aria-labelledby="conv-title">
+    <section id="platform" className="conv on-dark dots" aria-labelledby="conv-title">
       <div className="wrap conv-stage">
         <div className="conv-before">
           <p className="eyebrow">{convergence.before.eyebrow}</p>

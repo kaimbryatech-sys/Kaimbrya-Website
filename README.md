@@ -18,7 +18,7 @@ npm run build      # static site in out/
 
 | Page | Path |
 | --- | --- |
-| Home | `/` |
+| Home | `/` (opens with the signature story: a home is built and the community comes to life as you scroll) |
 | Platform overview | `/platform/` (seven module sections with anchors, e.g. `#finance`) |
 | Communication and transparency | `/communication/` (four pillars and the rumour-to-facts story) |
 | Document library | `/library/` |
@@ -44,9 +44,10 @@ Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`, `communi
 | Path | What it holds |
 | --- | --- |
 | `src/components/sections.tsx`, `blocks.tsx` | Page sections and shared blocks (server components, static HTML) |
-| `src/components/Header.tsx`, `GuestJourney.tsx`, `RoleSwitcher.tsx`, `DemoForm.tsx` | The only client components |
+| `src/components/Header.tsx`, `GuestJourney.tsx`, `RoleSwitcher.tsx`, `DemoForm.tsx`, `PricingSimulator.tsx`, `SignatureStory.tsx` | The only client components |
 | `src/components/motion-features.ts` | framer-motion features, loaded after the page is interactive. Used only by the guest journey. |
-| `public/enhance.js` | About 2 KB: reveals, the scroll-driven convergence scene and the hero tilt. The page is complete without it. |
+| `src/story/` | The signature story: `scene.ts` draws the isometric home and community as functions of the story state; `runtime.ts` scrubs it with GSAP ScrollTrigger. It loads on the visitor's first scroll, so it stays out of the first-load budget. Reduced motion gets three still frames; without JavaScript, a poster and the full story as text. Copy is in `src/content/story.ts`. |
+| `public/enhance.js` | Under 2 KB: reveal-on-scroll and the hero tilt. The page is complete without it. |
 | `src/app/globals.css` | Brand and motion tokens, all styles, reduced-motion rules |
 | `public/og.jpg` | The link-preview card shown by WhatsApp, email and social apps |
 | `assets/screens/` | Full-resolution app captures, with `RECORD.md` listing the source and use of each |
@@ -61,6 +62,8 @@ Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`, `communi
 | `npm run test:pricing` | Calculation tests for the pricing engine (Node's test runner, no extra dependencies) |
 | `npm run verify` | Headless checks of the local build (run `npm run build` first) |
 | `npm run verify:live` | Read-only checks of the deployed site; never submits the form. Add a URL to check another address. |
+| `node scripts/story-record.mjs [outDir] [url]` | Records the signature story from the homepage (desktop and phone video plus stills). Serve `out/` first, or pass the live URL. |
+| `node scripts/story-preview.mjs qa/story wide poster` | Rebuilds `public/art/story-poster.svg`, the frame shown before the story loads and without JavaScript |
 
 ## Checks
 
