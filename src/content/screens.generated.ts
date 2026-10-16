@@ -67,6 +67,40 @@ export const screens = {
       2142
     ]
   },
+  "library-finance": {
+    "width": 2192,
+    "height": 1120,
+    "widths": [
+      400,
+      640,
+      960,
+      1280,
+      1680,
+      2160
+    ]
+  },
+  "library-preview": {
+    "width": 2048,
+    "height": 1620,
+    "widths": [
+      400,
+      640,
+      960,
+      1280,
+      1680,
+      2048
+    ]
+  },
+  "library-share": {
+    "width": 1024,
+    "height": 928,
+    "widths": [
+      400,
+      640,
+      960,
+      1024
+    ]
+  },
   "maintenance-board": {
     "width": 2880,
     "height": 1800,
@@ -115,6 +149,16 @@ export const screens = {
       2160
     ]
   },
+  "owner-budget-notice": {
+    "width": 1170,
+    "height": 2532,
+    "widths": [
+      400,
+      640,
+      960,
+      1170
+    ]
+  },
   "owner-home": {
     "width": 1170,
     "height": 2532,
@@ -126,6 +170,16 @@ export const screens = {
     ]
   },
   "owner-notices": {
+    "width": 1170,
+    "height": 2532,
+    "widths": [
+      400,
+      640,
+      960,
+      1170
+    ]
+  },
+  "owner-notifications": {
     "width": 1170,
     "height": 2532,
     "widths": [

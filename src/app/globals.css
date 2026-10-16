@@ -676,3 +676,8 @@ section:has(.guest-grid) { overflow-x: clip; }
 /* The old-way fragments drift past the viewport edge at some widths (1024 px); clip
    horizontally so they can't widen the page. clip (not hidden) keeps the sticky stage working. */
 .conv { overflow-x: clip; }
+
+/* ── Communication and Library pages ─────────────────────────────────────── */
+@media (min-width: 1100px) { .module-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.pillar-tag { font-size: 0.75rem !important; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent, var(--color-petrol)) !important; margin: 0 0 8px !important; }
+.story-note { margin: 18px 0 28px; padding-left: 14px; border-left: 2px solid var(--color-mahoe-soft); color: #cfe0e6; font-size: 0.9375rem; line-height: 1.6; }

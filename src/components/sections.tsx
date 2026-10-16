@@ -276,6 +276,7 @@ export function Community() {
             </PanelFrame>
           </div>
           <p className="note">{community.note}</p>
+          <a href={community.link.href} className="link-arrow" style={{ marginTop: 20 }}>{community.link.label} <ArrowRight /></a>
         </Reveal>
         <Reveal i={1} className="comm-phone">
           <PhoneFrame>

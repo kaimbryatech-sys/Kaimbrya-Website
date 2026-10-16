@@ -10,7 +10,7 @@ import { Screen } from "./Screen";
  * Signature C: invite → approve → arrive. The visitor drives it (click, arrow keys or
  * swipe); it never plays on its own. Each step's screen is a real capture.
  */
-export function GuestJourney({ steps, children }: { steps: GuestStep[]; children: React.ReactNode }) {
+export function GuestJourney({ steps, children, ariaLabel = "Guest access, step by step", idPrefix = "guest" }: { steps: GuestStep[]; children: React.ReactNode; ariaLabel?: string; idPrefix?: string }) {
   const [active, setActive] = useState(0);
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
   const swipeStart = useRef<number | null>(null);
@@ -40,27 +40,27 @@ export function GuestJourney({ steps, children }: { steps: GuestStep[]; children
     <div className="guest-grid">
       <div>
         {children}
-        <div role="tablist" aria-label="Guest access, step by step" aria-orientation="vertical" className="steps" onKeyDown={onKeyDown}>
+        <div role="tablist" aria-label={ariaLabel} aria-orientation="vertical" className="steps" onKeyDown={onKeyDown}>
           {steps.map((step, i) => (
             <button
               key={step.id}
               ref={(el) => { tabs.current[i] = el; }}
               type="button"
               role="tab"
-              id={`guest-tab-${step.id}`}
+              id={`${idPrefix}-tab-${step.id}`}
               aria-selected={i === active}
-              aria-controls="guest-panel"
-              aria-labelledby={`guest-label-${step.id} guest-title-${step.id}`}
-              aria-describedby={`guest-text-${step.id}`}
+              aria-controls={`${idPrefix}-panel`}
+              aria-labelledby={`${idPrefix}-label-${step.id} ${idPrefix}-title-${step.id}`}
+              aria-describedby={`${idPrefix}-text-${step.id}`}
               tabIndex={i === active ? 0 : -1}
               className="step-tab"
               onClick={() => go(i)}
             >
               <span className="step-num" aria-hidden="true">{i + 1}</span>
               <span>
-                <span className="step-label" id={`guest-label-${step.id}`}>{step.label}</span>
-                <span className="step-title" id={`guest-title-${step.id}`}>{step.title}</span>
-                <span className="step-text"><span id={`guest-text-${step.id}`}>{step.text}</span></span>
+                <span className="step-label" id={`${idPrefix}-label-${step.id}`}>{step.label}</span>
+                <span className="step-title" id={`${idPrefix}-title-${step.id}`}>{step.title}</span>
+                <span className="step-text"><span id={`${idPrefix}-text-${step.id}`}>{step.text}</span></span>
               </span>
             </button>
           ))}
@@ -73,9 +73,9 @@ export function GuestJourney({ steps, children }: { steps: GuestStep[]; children
       </div>
 
       <div
-        id="guest-panel"
+        id={`${idPrefix}-panel`}
         role="tabpanel"
-        aria-labelledby={`guest-tab-${steps[active]?.id}`}
+        aria-labelledby={`${idPrefix}-tab-${steps[active]?.id}`}
         className="guest-stage"
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}

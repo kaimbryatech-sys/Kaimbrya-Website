@@ -65,7 +65,9 @@ export const platformLinks = [
   { href: "/platform/#finance", title: "Finance and collections", text: "Invoices, recorded payments and arrears" },
   { href: "/platform/#guest-access", title: "Guest access and security", text: "Visitors, the gate, incidents and shifts" },
   { href: "/platform/#properties", title: "Properties and maintenance", text: "One register; work tracked to done" },
-  { href: "/platform/#community", title: "Community life", text: "Notices, events, votes and bookings" },
+  { href: "/communication/", title: "Communication and transparency", text: "Official notices, events, votes and ideas" },
+  { href: "/library/", title: "Document library", text: "Bylaws, minutes, budgets and forms in one place" },
+  { href: "/platform/#community", title: "Community life", text: "Bookings, yard sale and donations" },
   { href: "/platform/#administration", title: "Roles and records", text: "Permissions, audit trail and exports" },
 ];
 
@@ -201,10 +203,11 @@ export const operations = {
 };
 
 export const community = {
-  eyebrow: "Communication and governance",
-  title: "More informed residents. More connected communities.",
-  lead: "Post a water interruption or an AGM once, and every resident sees it in the app, pinned and prioritised. Owners vote with anonymous ballots and quorum tracking, and suggest improvements the board can see.",
+  eyebrow: "Communication and transparency",
+  title: "One community. One trusted source of information.",
+  lead: "Post a water interruption or an AGM once, and every resident sees it in the app, pinned and prioritised. Bylaws, minutes and approved budgets sit in the Library for owners to open any time. Owners vote with anonymous ballots and quorum tracking, and suggest improvements the board can see.",
   note: "Online votes support the meetings and votes your governing documents require. They don't replace them.",
+  link: { label: "See how communication works", href: "/communication/" },
 };
 
 export const audiencesSection = {

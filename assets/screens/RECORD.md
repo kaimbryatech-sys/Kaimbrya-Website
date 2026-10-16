@@ -39,3 +39,16 @@ Guards scanning the QR pass at the gate was checked in code: `UnifiedScanner` us
 | data-export.png | `/dashboard/data-export`, admin | Property managers; Platform › Administration | Yes. Export builder with column picking |
 | incidents-queue.png | Crop of `/dashboard/incident-management`, admin | Gated communities; Platform › Security | Yes |
 | announcements-table.png | Crop of `/dashboard/announcements`, admin | Strata; Platform › Communication | Yes |
+
+### Library and communication captures (16 October 2026)
+
+Captured from a production build of app `main` (commit a95db32b) against the test database, after adding fictional Library documents, a budget announcement and two notifications for the demo homeowner (`marketing/app-demo-data/library.seed.ts`; rows listed in `out/library-manifest.json`).
+
+| File | App page and account | Used for | Feature checked in the app |
+| --- | --- | --- | --- |
+| library-finance.png | Crop of `/dashboard/library`, Finance folder, homeowner | Communication, Library | Yes; a homeowner sees only folders holding documents shared with them |
+| library-preview.png | Preview dialog for Proposed Budget 2027.pdf, homeowner | Library; rumour-to-facts step 3 | Yes; in-app PDF preview (pdf.js) |
+| library-share.png | Share Management dialog, admin | Communication, Library | Yes; shared with the Home owner role |
+| owner-budget-notice.png | `/dashboard/announcements` on a phone, homeowner | Communication hero; rumour-to-facts step 1 | Yes; pinned, Policy, High |
+| owner-notifications.png | Notifications panel on a phone, homeowner | Rumour-to-facts step 2; Library | Yes; wording matches the app's announcement and Library notifications |
+

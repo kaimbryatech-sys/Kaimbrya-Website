@@ -20,12 +20,14 @@ npm run build      # static site in out/
 | --- | --- |
 | Home | `/` |
 | Platform overview | `/platform/` (seven module sections with anchors, e.g. `#finance`) |
+| Communication and transparency | `/communication/` (four pillars and the rumour-to-facts story) |
+| Document library | `/library/` |
 | Solutions | `/solutions/gated-communities/`, `/strata-and-hoas/`, `/property-managers/`, `/developers/` |
 | Book a demo | `/demo/` (`?type=gated` and similar pre-select the organisation type) |
 | About, Contact | `/about/`, `/contact/` |
 | Privacy policy, Terms of use | `/privacy/`, `/terms/` |
 
-Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`); the legal and company pages are in `src/app/<page>/page.tsx`.
+Copy lives in `src/content/` (`site.ts`, `platform.ts`, `solutions.ts`, `communication.ts`); the legal and company pages are in `src/app/<page>/page.tsx`.
 
 ## Hosting and the demo form
 

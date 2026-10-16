@@ -168,7 +168,7 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
 
 // Inner pages: full-page screenshots, overflow and accessibility at phone and desktop widths.
 {
-  const PAGES = ["/platform/", "/solutions/gated-communities/", "/solutions/strata-and-hoas/", "/solutions/property-managers/", "/solutions/developers/", "/about/", "/contact/", "/privacy/", "/terms/"];
+  const PAGES = ["/platform/", "/solutions/gated-communities/", "/solutions/strata-and-hoas/", "/solutions/property-managers/", "/solutions/developers/", "/communication/", "/library/", "/about/", "/contact/", "/privacy/", "/terms/"];
   for (const [name, opts] of [["mobile", { ...VIEWPORTS.mobile, deviceScaleFactor: 1 }], ["desktop", VIEWPORTS.desktop]]) {
     const context = await browser.newContext(opts);
     await serve(context);

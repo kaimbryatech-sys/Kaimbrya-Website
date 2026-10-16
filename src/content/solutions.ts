@@ -179,8 +179,8 @@ export const solutions: Solution[] = [
         {
           title: "Notices owners actually see",
           text: "Post a water interruption or an AGM once, and it reaches every resident in the app, pinned and prioritised.",
-          points: ["Categories, priorities and pinned notices", "Sent by email, push or in the app", "Events on a shared calendar, with reminders"],
-          link: "/platform/#community",
+          points: ["Categories, priorities and pinned notices", "Sent by email, push or in the app", "Bylaws, minutes and approved budgets in the Library, shared with owners", "Events on a shared calendar, with reminders"],
+          link: "/communication/",
           linkLabel: "More about communication",
           layout: "panel-phone",
           shots: [shot.announcements, shot.notices],
@@ -218,6 +218,7 @@ export const solutions: Solution[] = [
       ],
     },
     faq: [
+      { q: "Where do owners find the bylaws, minutes and budget?", a: "In the Library. The board shares each document with owners, who open PDFs right in the app or download them, any time." },
       { q: "Can owners pay online in Kaimbrya?", a: "Not today. Owners pay by bank transfer, as most communities already do, and send proof of payment in the app. Your team confirms each payment before a balance changes." },
       { q: "Does online voting replace our AGM?", a: "No. Online votes support the meetings and votes your governing documents require. They don't replace them." },
       { q: "Can we bring in our existing balances?", a: "Yes. Earlier payments, opening credits and outstanding charges can be recorded, one by one or from a spreadsheet, when your community moves onto Kaimbrya." },
