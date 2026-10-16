@@ -23,7 +23,12 @@ export function Footer() {
             <h2 id="f-start">Get started</h2>
             <ul>
               <li><Link href="/demo/" prefetch={false}>Book a demo</Link></li>
+              <li><a href="/tour/">Explore Kaimbrya</a></li>
               <li><a href="/pricing/">Pricing</a></li>
+              <li><a href="/readiness/">Readiness check</a></li>
+              <li><a href="/launch/">Your journey to launch</a></li>
+              <li><a href="/board-kit/">Board presentation kit</a></li>
+              <li><a href="/resources/">Resources</a></li>
               {config.appSignInUrl ? <li><a href={config.appSignInUrl}>Sign in</a></li> : null}
             </ul>
           </nav>
@@ -33,6 +38,7 @@ export function Footer() {
               <li><a href="/about/">About</a></li>
               <li><a href="/contact/">Contact</a></li>
               <li><a href={`mailto:${config.contactEmail}`}>{config.contactEmail}</a></li>
+              <li><a href={config.whatsapp.href} target="_blank" rel="noopener noreferrer">WhatsApp {config.whatsapp.display}<span className="sr-only"> (opens in a new tab)</span></a></li>
             </ul>
           </nav>
         </div>

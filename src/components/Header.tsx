@@ -135,6 +135,7 @@ export function Header() {
               </div>
             </div>
           ))}
+          <a href="/tour/" className="nav-link" aria-current={pathname.startsWith("/tour") ? "page" : undefined}>Explore</a>
           <a href="/pricing/" className="nav-link" aria-current={pathname.startsWith("/pricing") ? "page" : undefined}>Pricing</a>
         </nav>
 
@@ -182,6 +183,10 @@ export function Header() {
               ))}
             </section>
           ))}
+          <a href="/tour/" className="mobile-menu-link" onClick={() => setMobileOpen(false)}>
+            <strong>Explore Kaimbrya</strong>
+            <span>Try sample workflows in a fictional community</span>
+          </a>
           <a href="/pricing/" className="mobile-menu-link" onClick={() => setMobileOpen(false)}>
             <strong>Pricing</strong>
             <span>Estimate your community&apos;s price</span>

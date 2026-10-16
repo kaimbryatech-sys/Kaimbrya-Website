@@ -1,0 +1,63 @@
+/* ── /launch/: the journey to launch ─────────────────────────────────────────
+   Page-specific styles; every class is prefixed lj- so nothing leaks elsewhere. */
+
+.lj-layout { display: grid; gap: 40px; }
+.lj-intro { min-width: 0; }
+.lj-jump { margin-top: 28px; }
+.lj-jump ol { display: flex; flex-wrap: wrap; gap: 8px; }
+.lj-jump a {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 14px 6px 6px;
+  border-radius: 999px; background: #fff; box-shadow: 0 0 0 1px var(--color-line);
+  font-size: 0.9375rem; font-weight: 600; color: var(--color-ink);
+  transition: box-shadow var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.lj-jump a:hover { color: var(--color-petrol); box-shadow: 0 0 0 1px #9fb1ba; }
+.lj-jump a span { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: rgba(31, 95, 117, 0.1); color: var(--color-petrol); font-size: 0.8125rem; }
+
+@media (min-width: 1100px) {
+  .lj-layout { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 72px; align-items: start; }
+  .lj-intro { position: sticky; top: calc(var(--header-h) + 32px); }
+  .lj-jump ol { display: grid; gap: 6px; }
+  .lj-jump a { background: transparent; box-shadow: none; padding-right: 10px; }
+  .lj-jump a:hover { background: #fff; box-shadow: 0 0 0 1px var(--color-line); }
+}
+
+/* The numbered rail */
+.lj-steps { position: relative; display: grid; gap: 20px; min-width: 0; }
+.lj-steps::before { content: ""; position: absolute; left: 21px; top: 22px; bottom: 22px; width: 2px; background: linear-gradient(180deg, var(--color-petrol), var(--color-mahoe) 70%, var(--color-leaf)); opacity: 0.35; }
+.lj-step { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; align-items: start; scroll-margin-top: calc(var(--header-h) + 24px); }
+.lj-num { position: relative; z-index: 1; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--color-petrol); color: #fff; font-weight: 600; box-shadow: 0 0 0 6px var(--color-paper); }
+.lj-step:last-child .lj-num { background: var(--color-leaf); }
+.lj-card { min-width: 0; padding: clamp(20px, 3vw, 28px); border-radius: 20px; background: #fff; box-shadow: 0 0 0 1px var(--color-line), 0 18px 40px -30px rgba(4, 20, 27, 0.35); }
+.lj-step:target .lj-card { box-shadow: 0 0 0 2px var(--color-petrol), 0 18px 40px -30px rgba(4, 20, 27, 0.35); }
+.lj-label { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-mahoe-ink); }
+.lj-title { margin-top: 6px; font-family: var(--font-serif); font-weight: 500; font-size: clamp(1.375rem, 1.15rem + 0.8vw, 1.75rem); line-height: 1.2; text-wrap: balance; }
+.lj-text { margin-top: 10px; color: var(--color-muted); line-height: 1.65; }
+.lj-meta { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--color-line); display: grid; gap: 16px; }
+.lj-meta h4 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-petrol); }
+.lj-meta p { margin-top: 6px; color: var(--color-ink); }
+.lj-meta .ticks { margin-top: 6px; }
+@media (min-width: 640px) { .lj-meta { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 24px; } }
+.lj-links { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+@media (max-width: 479px) {
+  .lj-steps::before { left: 17px; }
+  .lj-step { grid-template-columns: 36px minmax(0, 1fr); gap: 10px; }
+  .lj-num { width: 36px; height: 36px; font-size: 0.9375rem; }
+}
+
+/* Rolling out now */
+.lj-rollout-grid { display: grid; gap: 40px; align-items: start; }
+.on-dark .lj-rollout-lead { margin-top: 18px; color: #fff; font-size: clamp(1.1875rem, 1.05rem + 0.6vw, 1.5rem); }
+.lj-milestones { padding: clamp(22px, 3vw, 32px); border-radius: 22px; background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12) inset; }
+.lj-milestones h3 { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-mahoe-soft); }
+.lj-milestones .ticks { margin-top: 14px; gap: 12px; }
+@media (min-width: 1024px) { .lj-rollout-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 72px; } }
+
+/* What to gather */
+.lj-gather { margin-top: 40px; display: grid; gap: 16px; }
+@media (min-width: 640px) { .lj-gather { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .lj-gather { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.lj-gather-item { height: 100%; padding: 22px 24px; border-radius: 18px; background: var(--color-paper); box-shadow: 0 0 0 1px var(--color-line) inset; }
+.lj-gather-item h3 { font-weight: 600; font-size: 1.0625rem; display: flex; align-items: center; gap: 10px; }
+.lj-gather-item h3::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--color-mahoe); }
+.lj-gather-item p { margin-top: 6px; color: var(--color-muted); }

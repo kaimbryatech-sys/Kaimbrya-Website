@@ -19,6 +19,11 @@ export default function ContactPage() {
           <a className="contact-email" href={`mailto:${config.contactEmail}`}>{config.contactEmail}</a>
         </div>
         <div className="contact-card">
+          <h2>WhatsApp us</h2>
+          <p>Prefer to chat? Message the team on WhatsApp and we&apos;ll reply there.</p>
+          <a className="contact-email" href={config.whatsapp.href} target="_blank" rel="noopener noreferrer">{config.whatsapp.display}<span className="sr-only"> on WhatsApp (opens in a new tab)</span></a>
+        </div>
+        <div className="contact-card">
           <h2>Book a demo</h2>
           <p>Tell us about your community and we&apos;ll arrange a walkthrough of the parts that matter most to you.</p>
           <Link prefetch={false} href="/demo/" className="btn btn-primary">Book a demo <ArrowRight /></Link>

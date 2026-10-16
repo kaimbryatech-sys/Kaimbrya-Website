@@ -9,6 +9,8 @@ import type { ScreenName } from "./screens.generated";
 export const config = {
   /** Business inbox, confirmed October 2026. */
   contactEmail: "kaimbryatech@gmail.com",
+  /** Business WhatsApp (the brochure's number, +1 876 990 1156). */
+  whatsapp: { display: "+1 876 990 1156", href: "https://wa.me/18769901156" },
   /** Open question: the app's sign-in address. The Sign in link is hidden until this is set. */
   appSignInUrl: process.env.NEXT_PUBLIC_APP_SIGN_IN_URL ?? "",
   /** Optional custom endpoint for demo requests. Unset = submissions go to Netlify Forms ("demo-request"). */

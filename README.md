@@ -22,7 +22,12 @@ npm run build      # static site in out/
 | Platform overview | `/platform/` (seven module sections with anchors, e.g. `#finance`) |
 | Communication and transparency | `/communication/` (four pillars and the rumour-to-facts story) |
 | Document library | `/library/` |
-| Pricing | `/pricing/` (estimate simulator and quote request; see `PRICING-QA.md`) |
+| Pricing | `/pricing/` (estimate simulator, free community domain setup and quote request; see `PRICING-QA.md`) |
+| Explore Kaimbrya | `/tour/` (clickable community map, guided demos of guest access, finance, maintenance and governance, and a day in the community; fictional data, runs in the browser) |
+| Readiness check | `/readiness/` (seven questions that recommend modules and show an indicative price; nothing is sent) |
+| Journey to launch | `/launch/` (onboarding steps, free domain setup, rollout status, FAQs) |
+| Board presentation kit | `/board-kit/` (printable, or save as PDF, to share with a board) |
+| Resources | `/resources/` (guides: strata vs gated subdivisions, getting started, fair votes, moving off spreadsheets) |
 | Solutions | `/solutions/gated-communities/`, `/strata-and-hoas/`, `/property-managers/`, `/developers/` |
 | Book a demo | `/demo/` (`?type=gated` and similar pre-select the organisation type) |
 | About, Contact | `/about/`, `/contact/` |

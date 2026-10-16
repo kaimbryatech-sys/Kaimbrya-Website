@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DemoForm } from "@/components/DemoForm";
+import { config } from "@/content/site";
 import { demoPage } from "@/content/site";
 
 export const metadata: Metadata = {
@@ -21,6 +22,9 @@ export default function DemoPage() {
               <li key={step.title}><span><strong>{step.title}</strong> {step.text}</span></li>
             ))}
           </ol>
+          <p className="field-help" style={{ marginTop: 20 }}>
+            Prefer to chat? <a href={config.whatsapp.href} target="_blank" rel="noopener noreferrer">Message us on WhatsApp<span className="sr-only"> (opens in a new tab)</span></a> at {config.whatsapp.display}.
+          </p>
         </div>
         {/* The form reads ?type= to pre-select the organisation type, so it renders on the client. */}
         <Suspense fallback={<div className="form-card" aria-busy="true" style={{ minHeight: 640 }} />}>

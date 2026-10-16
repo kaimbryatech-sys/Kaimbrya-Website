@@ -1,5 +1,12 @@
 # Website enhancement backlog
 
+## Status (16 October 2026)
+
+Built: interactive demo, clickable community, day-in-the-community simulator, finance and governance showcases (all on `/tour/`); readiness check (`/readiness/`); journey to launch with rollout status and onboarding FAQs (`/launch/`); board presentation kit (`/board-kit/`); resources and the strata vs gated-subdivision guide (`/resources/`); WhatsApp contact.
+
+On hold: the Trust and transparency centre (#9), until open security items in the app are resolved; publishing security assurances before then would be misleading. Analytics: not chosen yet.
+
+
 Ideas queued for consideration (proposal received 16 October 2026). Nothing here is committed or scheduled. Before any of it reaches the site, claims must be verified, visuals stay as illustrations and real app screens (no stock photos), and the rollout community stays anonymous.
 
 ## Already on the site (extend rather than rebuild)
