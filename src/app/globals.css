@@ -796,6 +796,7 @@ section:has(.guest-grid) { overflow-x: clip; }
 /* Sky and veil opacities are set on the elements by the runtime (no inherited variables: the scene is thousands of nodes). */
 .story-sky { position: absolute; inset: 0; background: linear-gradient(180deg, #123a4b 0%, #2c5466 45%, #e9c79d 100%); opacity: 0; pointer-events: none; }
 .story-svg, .story-poster { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.story-svg text { font-family: var(--font-sans); } /* the self-hosted face has a generated family name */
 /* First light: with motion, the story opens in the hero's deep blue and brightens as the visitor scrolls in.
    At full strength (0.88) this colour over the lawn lands on --color-deep, so the hero runs straight into the scene
    with only the trees' silhouettes showing. */

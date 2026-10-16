@@ -1,12 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import "./globals.css";
 
 // Two families, four files: Sans 400/600, Serif 500 and 500 italic (display headlines only).
-const sans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-plex-sans", display: "swap" });
-const serif = IBM_Plex_Serif({ subsets: ["latin"], weight: ["500"], style: ["normal", "italic"], variable: "--font-plex-serif", display: "swap" });
+// IBM Plex, Latin subset, self-hosted from Fontsource 5.3.0 (SIL Open Font License, fonts/OFL.txt),
+// so the build never fetches from Google Fonts (its responses broke Netlify builds in October 2026).
+const plexSans = localFont({
+  src: [
+    { path: "./fonts/ibm-plex-sans-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/ibm-plex-sans-latin-600-normal.woff2", weight: "600", style: "normal" },
+  ],
+  variable: "--font-plex-sans",
+  display: "swap",
+});
+const plexSerif = localFont({
+  src: [
+    { path: "./fonts/ibm-plex-serif-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/ibm-plex-serif-latin-500-italic.woff2", weight: "500", style: "italic" },
+  ],
+  variable: "--font-plex-serif",
+  display: "swap",
+  adjustFontFallback: "Times New Roman",
+});
 
 // Netlify sets URL to the site's primary address at build time, so a custom domain
 // is picked up automatically; NEXT_PUBLIC_SITE_URL overrides it elsewhere.
@@ -41,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     // public/enhance.js adds the "enhanced" class before it hides anything, so the
     // page stays fully visible if the script never runs.
-    <html lang="en" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${plexSans.variable} ${plexSerif.variable}`} suppressHydrationWarning>
       <body>
         <a href="#main" className="skip-link">Skip to content</a>
         <Header />
