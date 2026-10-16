@@ -412,6 +412,7 @@ section:has(.guest-grid) { overflow-x: clip; }
 .roles-tabs { margin: 36px auto 0; display: flex; width: fit-content; max-width: 100%; padding: 5px; border-radius: 999px; background: var(--color-paper); box-shadow: 0 0 0 1px var(--color-line) inset; }
 .role-tab { min-height: 44px; padding: 10px 22px; border-radius: 999px; font-weight: 600; color: var(--color-muted); transition: background-color var(--dur-swap) var(--ease-out), color var(--dur-swap) var(--ease-out), box-shadow var(--dur-swap); }
 .role-tab:hover { color: var(--color-ink); }
+@media (max-width: 399px) { .role-tab { padding-inline: 12px; } }
 .role-tab[aria-selected="true"] { background: #fff; color: var(--color-petrol); box-shadow: 0 2px 10px -4px rgba(4, 20, 27, 0.25); }
 .role-panels { display: grid; margin-top: 44px; }
 .role-panel { grid-area: 1 / 1; display: grid; gap: 40px; align-items: center; transition: opacity var(--dur-swap) var(--ease-out), transform var(--dur-swap) var(--ease-out), visibility 0s linear var(--dur-swap); }
@@ -671,3 +672,7 @@ section:has(.guest-grid) { overflow-x: clip; }
 .about-values li { padding: 26px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 1px var(--color-line) inset; }
 .about-values h3 { font-weight: 600; font-size: 1.0625rem; }
 .about-values p { margin-top: 8px; color: var(--color-muted); line-height: 1.6; }
+
+/* The old-way fragments drift past the viewport edge at some widths (1024 px); clip
+   horizontally so they can't widen the page. clip (not hidden) keeps the sticky stage working. */
+.conv { overflow-x: clip; }
