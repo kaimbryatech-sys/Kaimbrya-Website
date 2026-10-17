@@ -132,3 +132,30 @@ test("every preset produces a valid estimate", () => {
     assert.ok(e.monthlyCents >= card.baseCents, p.id);
   }
 });
+
+test("Professional Community Ledger: 190 homes = 24500 without, 26500 with", () => {
+  const off = standardEstimate(190, card);
+  const on = standardEstimate(190, card, { ledger: true });
+  assert.equal(off.monthlyCents, 24500);
+  assert.equal(on.monthlyCents, 26500);
+  assert.equal(off.annualCents, 294000);
+  assert.equal(on.annualCents, 318000);
+  assert.equal(on.addonCents, 2000);
+  assert.equal(off.addonCents, 0);
+  assert.equal(formatUSD(on.monthlyCents), "US$265.00");
+});
+
+test("Ledger is per community: it doesn't scale with homes", () => {
+  for (const n of [0, 50, 500]) {
+    assert.equal(standardEstimate(n, card, { ledger: true }).monthlyCents - standardEstimate(n, card).monthlyCents, 2000, `${n} homes`);
+  }
+});
+
+test("Ledger works in custom class mode and keeps the comparison like with like", () => {
+  const off = estimate(premium, card);
+  const on = estimate(premium, card, { ledger: true });
+  assert.equal(on.monthlyCents, off.monthlyCents + 2000);
+  assert.equal(on.standard.monthlyCents, off.standard.monthlyCents + 2000);
+  assert.equal(on.differenceCents, off.differenceCents);
+  assert.equal(on.perUnitCents, Math.floor((2 * on.monthlyCents + 190) / 380));
+});

@@ -33,7 +33,7 @@ export default function PrivacyPage() {
         </ul>
         <p>
           When you request a quote from the pricing page, we collect the same kind of details, plus your community&apos;s location
-          and its configuration if you give them, and your answer about your community&apos;s domain, including any domain name you enter. If you choose to include your estimate, we also receive the property classes,
+          and its configuration if you give them, your answer about your community&apos;s domain, including any domain name you enter, and whether you selected an optional add-on such as the Professional Community Ledger (a pricing preference, not a purchase). If you choose to include your estimate, we also receive the property classes,
           numbers of homes and simulated rates you entered. The pricing calculator itself runs in your browser: nothing you type
           into it is sent or stored unless you submit a quote request.
         </p>

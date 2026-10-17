@@ -13,7 +13,11 @@ export type RateCard = {
   rateOptionsCents: readonly number[];
   maxUnitsPerClass: number;
   maxClasses: number;
+  addons: { ledger: { name: string; monthlyCents: number } };
 };
+
+/** Optional add-ons selected for the estimate. Each is charged once per community. */
+export type AddonSelection = { ledger?: boolean };
 
 export type ClassInput = { id: string; name: string; units: number; rateCents: number };
 export type ClassResult = ClassInput & { subtotalCents: number };
@@ -23,6 +27,9 @@ export type Estimate = {
   totalUnits: number;
   baseCents: number;
   variableCents: number;
+  /** Add-ons, once per community per month; included in monthly, annual, per-home and the standard comparison. */
+  addonCents: number;
+  ledger: boolean;
   monthlyCents: number;
   annualCents: number;
   /** Effective monthly cost per home, rounded half-up to the cent; null when there are no homes. */
@@ -59,7 +66,7 @@ function assertRate(rateCents: number, card: RateCard): void {
 const roundHalfUp = (numerator: number, denominator: number) => Math.floor((2 * numerator + denominator) / (2 * denominator));
 
 /** Estimate for one or more property classes. Throws on values the interface should have rejected. */
-export function estimate(classes: readonly ClassInput[], card: RateCard): Estimate {
+export function estimate(classes: readonly ClassInput[], card: RateCard, addons: AddonSelection = {}): Estimate {
   if (classes.length > card.maxClasses) throw new RangeError(`Too many classes: ${classes.length}`);
   const results = classes.map((c) => {
     assertUnits(c.units, card);
@@ -68,14 +75,19 @@ export function estimate(classes: readonly ClassInput[], card: RateCard): Estima
   });
   const totalUnits = results.reduce((sum, c) => sum + c.units, 0);
   const variableCents = results.reduce((sum, c) => sum + c.subtotalCents, 0);
-  const monthlyCents = card.baseCents + variableCents;
+  const ledger = addons.ledger === true;
+  const addonCents = ledger ? card.addons.ledger.monthlyCents : 0;
+  const monthlyCents = card.baseCents + variableCents + addonCents;
   const standardVariable = totalUnits * card.standardRateCents;
-  const standardMonthly = card.baseCents + standardVariable;
+  // Like with like: the standard comparison carries the same add-ons.
+  const standardMonthly = card.baseCents + standardVariable + addonCents;
   return {
     classes: results,
     totalUnits,
     baseCents: card.baseCents,
     variableCents,
+    addonCents,
+    ledger,
     monthlyCents,
     annualCents: monthlyCents * 12,
     perUnitCents: totalUnits > 0 ? roundHalfUp(monthlyCents, totalUnits) : null,
@@ -86,8 +98,8 @@ export function estimate(classes: readonly ClassInput[], card: RateCard): Estima
 }
 
 /** The published model: one class of homes at the standard rate. */
-export function standardEstimate(units: number, card: RateCard): Estimate {
-  return estimate([{ id: "standard", name: "Homes", units, rateCents: card.standardRateCents }], card);
+export function standardEstimate(units: number, card: RateCard, addons: AddonSelection = {}): Estimate {
+  return estimate([{ id: "standard", name: "Homes", units, rateCents: card.standardRateCents }], card, addons);
 }
 
 export type ClassErrors = { name?: string; units?: string; rate?: string };

@@ -27,10 +27,14 @@ export type Preset = {
 
 export const pricingConfig = {
   /** Shown on every estimate and attached to quote requests. Bump it whenever a value changes. */
-  version: "2026-10-16.2",
+  version: "2026-10-17.1",
   currency: "USD",
   baseCents: 15000,
   standardRateCents: 50,
+  /** Optional add-ons, charged once per community per month (never per home). */
+  addons: {
+    ledger: { name: "Professional Community Ledger", monthlyCents: 2000 },
+  },
   /** Illustrative per-home rates for the custom simulator. Subject to commercial approval. */
   rateOptionsCents: [40, 50, 65, 80, 100],
   maxUnitsPerClass: 100_000,

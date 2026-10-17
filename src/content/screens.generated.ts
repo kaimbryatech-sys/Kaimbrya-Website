@@ -67,6 +67,30 @@ export const screens = {
       2142
     ]
   },
+  "ledger-reports": {
+    "width": 2880,
+    "height": 1800,
+    "widths": [
+      400,
+      640,
+      960,
+      1280,
+      1680,
+      2160
+    ]
+  },
+  "ledger-trial-balance": {
+    "width": 2880,
+    "height": 1800,
+    "widths": [
+      400,
+      640,
+      960,
+      1280,
+      1680,
+      2160
+    ]
+  },
   "library-finance": {
     "width": 2192,
     "height": 1120,

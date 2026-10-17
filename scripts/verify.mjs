@@ -198,6 +198,21 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
   d.keepsTypedName = (await page.inputValue("#domain-name")) === "mahoe ridge";
   d.estimateUnchanged = (await amount()) === pr.notSureStandard;
   await page.screenshot({ path: path.join(QA, "desktop-pricing-domain.png"), fullPage: true });
+  // Professional Community Ledger add-on: per community, off by default, independent of the homes entered.
+  const lg = (pr.ledger = {});
+  const ledgerBox = page.getByLabel("Add Professional Community Ledger");
+  lg.offByDefault = !(await ledgerBox.isChecked());
+  lg.unitsBefore = await page.inputValue("#pricing-units");
+  await ledgerBox.check();
+  lg.on = await amount();
+  lg.annual = (await page.locator(".summary-facts dd").first().innerText()).trim();
+  lg.lineShown = (await page.locator(".breakdown-addon").innerText()).replace(/\s+/g, " ").includes("US$20.00");
+  await ledgerBox.uncheck();
+  lg.off = await amount();
+  lg.unitsUnchanged = (await page.inputValue("#pricing-units")) === lg.unitsBefore;
+  lg.tableHeaders = await page.locator(".compare-table thead th").count();
+  await ledgerBox.check();
+  lg.recapSelected = (await page.locator("#quote .domain-recap-value").first().innerText()).includes("selected (+US$20.00/month)");
   let posted = "";
   page.on("request", (r) => { if (r.method() === "POST" && r.url().endsWith("/__forms.html")) posted = r.postData() ?? ""; });
   await page.fill("#q-name", "Andrea Campbell");
@@ -211,7 +226,7 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
   await page.waitForSelector("#quote .success", { timeout: 5000 });
   pr.quoteSuccess = await page.locator("#quote .success h2").innerText();
   const body = new URLSearchParams(posted);
-  pr.quotePayload = { formName: body.get("form-name"), homes: body.get("homes"), configuration: body.get("configuration"), rateCard: body.get("rate-card"), scenarioHasTotal: (body.get("scenario") ?? "").includes("Monthly estimate: US$245.00"), markedNotQuotation: (body.get("request-type") ?? "").includes("not an accepted quotation"), domainStatus: body.get("domain-status"), domainName: body.get("domain-name"), domainHelp: body.get("domain-help"), scenarioHasDomain: (body.get("scenario") ?? "").includes("Domain setup: free") };
+  pr.quotePayload = { formName: body.get("form-name"), homes: body.get("homes"), configuration: body.get("configuration"), rateCard: body.get("rate-card"), scenarioHasTotal: (body.get("scenario") ?? "").includes("Monthly estimate: US$265.00"), ledgerAddon: body.get("ledger-addon"), estimateMonthly: body.get("estimate-monthly"), estimateAnnual: body.get("estimate-annual"), scenarioHasLedger: (body.get("scenario") ?? "").includes("Professional Community Ledger: selected (+US$20.00/month)"), markedNotQuotation: (body.get("request-type") ?? "").includes("not an accepted quotation"), domainStatus: body.get("domain-status"), domainName: body.get("domain-name"), domainHelp: body.get("domain-help"), scenarioHasDomain: (body.get("scenario") ?? "").includes("Domain setup: free") };
   await scrollThrough(page);
   await page.waitForTimeout(900);
   const pAxe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
@@ -224,6 +239,8 @@ for (const [name, opts] of Object.entries(VIEWPORTS)) {
   if (d.summaryFree !== "Free") report.problems.push(`pricing domain: summary shows ${d.summaryFree}`);
   if (pr.quotePayload.domainStatus !== "Already has a domain" || pr.quotePayload.domainName !== "portal.mahoeridge.com.jm" || pr.quotePayload.domainHelp !== "Help connecting an existing domain" || !pr.quotePayload.scenarioHasDomain) report.problems.push(`pricing domain: payload ${JSON.stringify(pr.quotePayload)}`);
   if (pr.quotePayload.formName !== "pricing-inquiry" || pr.quotePayload.homes !== "190" || !pr.quotePayload.scenarioHasTotal || !pr.quotePayload.markedNotQuotation) report.problems.push(`pricing: quote payload ${JSON.stringify(pr.quotePayload)}`);
+  if (lg.offByDefault !== true || lg.on !== "US$265.00/month" || lg.annual !== "US$3,180.00" || lg.off !== "US$245.00/month" || !lg.unitsUnchanged || !lg.lineShown || lg.tableHeaders !== 3 || !lg.recapSelected) report.problems.push(`pricing ledger: ${JSON.stringify(lg)}`);
+  if (pr.quotePayload.ledgerAddon !== "Selected" || pr.quotePayload.estimateMonthly !== "US$265.00" || pr.quotePayload.estimateAnnual !== "US$3,180.00" || !pr.quotePayload.scenarioHasLedger) report.problems.push(`pricing ledger: payload ${JSON.stringify(pr.quotePayload)}`);
   await context.close();
 
   const mobile = await browser.newContext({ ...VIEWPORTS.mobile });

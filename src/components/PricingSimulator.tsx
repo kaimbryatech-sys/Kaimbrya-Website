@@ -6,6 +6,7 @@ import { config as site } from "@/content/site";
 import { normalizeDomain, type DomainCheck } from "@/lib/domain";
 import { estimate, formatJMD, formatUSD, parseUnits, standardEstimate, validateClasses, type Estimate } from "@/lib/pricing";
 import { Alert, ArrowRight, Check } from "./icons";
+import { ShotFrame } from "./blocks";
 
 /**
  * Pricing estimate simulator and quote request. Runs entirely in the browser; nothing is stored
@@ -43,17 +44,19 @@ export function PricingSimulator() {
   const [domainTouched, setDomainTouched] = useState(false);
   const domainText = domain.choice === "own" ? domain.own : domain.choice === "new" ? domain.wanted : "";
   const domainCheck = useMemo(() => normalizeDomain(domainText), [domainText]);
+  // The add-on choice is independent of presets and reset too: it only adds a per-community line.
+  const [ledger, setLedger] = useState(false);
   const answerDomain = (next: DomainAnswer) => { if (next.choice !== domain.choice) setDomainTouched(false); setDomain(next); };
 
   // ── Calculation ─────────────────────────────────────────────────────────
   const standardUnits = useMemo(() => parseUnits(unitsText, cfg.maxUnitsPerClass), [unitsText]);
   const classErrors = useMemo(() => validateClasses(classes, cfg), [classes]);
   const result: { estimate: Estimate | null; excluded: number } = useMemo(() => {
-    if (mode === "standard") return { estimate: standardUnits.ok ? standardEstimate(standardUnits.value, cfg) : null, excluded: 0 };
+    if (mode === "standard") return { estimate: standardUnits.ok ? standardEstimate(standardUnits.value, cfg, { ledger }) : null, excluded: 0 };
     const valid = classes.filter((c) => !classErrors[c.id]);
-    const e = estimate(valid.map((c) => ({ id: c.id, name: c.name.trim(), units: Number(c.unitsText.replace(/[,\s]/g, "")), rateCents: c.rateCents })), cfg);
+    const e = estimate(valid.map((c) => ({ id: c.id, name: c.name.trim(), units: Number(c.unitsText.replace(/[,\s]/g, "")), rateCents: c.rateCents })), cfg, { ledger });
     return { estimate: e, excluded: classes.length - valid.length };
-  }, [mode, standardUnits, classes, classErrors]);
+  }, [mode, standardUnits, classes, classErrors, ledger]);
   const est = result.estimate;
 
   // A calm, delayed announcement for screen readers (not on every keystroke).
@@ -326,9 +329,11 @@ export function PricingSimulator() {
         </div>
       </section>
 
+      <LedgerAddon selected={ledger} onChange={setLedger} />
+
       <DomainSetup answer={domain} onChange={answerDomain} check={domainCheck} showError={domainTouched} onBlur={() => setDomainTouched(true)} />
 
-      <QuoteForm domain={domain} domainCheck={domainCheck} onDomainInvalid={() => setDomainTouched(true)} scenario={scenario} defaultHomes={est?.totalUnits ?? 0} suggestedConfig={mode === "standard" ? "Standard homes" : est?.usesIllustrativeRates ? "Classified development (custom classes)" : (est?.classes.length ?? 0) > 1 ? "Mixed property types" : ""} />
+      <QuoteForm ledger={ledger} domain={domain} domainCheck={domainCheck} onDomainInvalid={() => setDomainTouched(true)} scenario={scenario} defaultHomes={est?.totalUnits ?? 0} suggestedConfig={mode === "standard" ? "Standard homes" : est?.usesIllustrativeRates ? "Classified development (custom classes)" : (est?.classes.length ?? 0) > 1 ? "Mixed property types" : ""} />
     </>
   );
 }
@@ -358,8 +363,11 @@ function Summary({ est, mode, excluded }: { est: Estimate | null; mode: Mode; ex
               ))
             )}
             {mode === "custom" ? <li className="breakdown-sub"><span>Property charges <small>{homes(est.totalUnits)}</small></span><span>{formatUSD(est.variableCents)}</span></li> : null}
+            {est.ledger ? <li className="breakdown-addon"><span>{cfg.addons.ledger.name} <small>add-on, per community</small></span><span>{formatUSD(est.addonCents)}</span></li> : null}
             <li className="breakdown-total"><span>Monthly estimate</span><span>{formatUSD(est.monthlyCents)}</span></li>
           </ul>
+          {est.ledger ? <p className="field-help">Per year and per home figures include the {cfg.addons.ledger.name} add-on. <a href="#addons" className="link-btn">Change add-ons</a></p> : null}
+          <p className="field-help">Estimates before applicable taxes; final terms are confirmed in your agreement.</p>
           {mode === "custom" && est.classes.length === 0 ? <p className="field-help">Add a property class to include homes in the estimate.</p> : null}
           {excluded > 0 ? <p className="summary-warning"><Alert width={16} height={16} />{excluded === 1 ? "1 class isn't" : `${excluded} classes aren't`} included until {excluded === 1 ? "its fields are" : "their fields are"} completed.</p> : null}
 
@@ -372,7 +380,7 @@ function Summary({ est, mode, excluded }: { est: Estimate | null; mode: Mode; ex
                   <div><dt>Your customized scenario</dt><dd>{formatUSD(est.monthlyCents)}/month</dd></div>
                   <div className="comparison-diff"><dt>Difference</dt><dd>{est.differenceCents > 0 ? "+" : ""}{formatUSD(est.differenceCents)}/month</dd></div>
                 </dl>
-                <p className="field-help">The difference comes only from the illustrative class rates you selected. The standard price uses {formatUSD(cfg.standardRateCents)} for every home.</p>
+                <p className="field-help">The difference comes only from the illustrative class rates you selected. The standard price uses {formatUSD(cfg.standardRateCents)} for every home.{est.ledger ? ` Both figures include the ${cfg.addons.ledger.name} add-on.` : ""}</p>
               </div>
             ) : (
               <p className="field-help">Every class uses the standard rate, so this matches standard pricing.</p>
@@ -411,7 +419,7 @@ function Summary({ est, mode, excluded }: { est: Estimate | null; mode: Mode; ex
 const clean = (s: string, max: number) => s.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 
 function describeScenario(mode: Mode, est: Estimate | null, classes: ClassRow[], errors: Record<string, unknown>) {
-  if (!est) return { text: "", json: "" };
+  if (!est) return { text: "", json: "", monthly: "", annual: "" };
   const lines = [
     "PRICING INQUIRY - website estimate only, not a quotation. Recompute from the inputs before quoting.",
     `Rate card: ${cfg.version} (base ${formatUSD(cfg.baseCents)}/month, standard ${formatUSD(cfg.standardRateCents)}/home)`,
@@ -426,6 +434,7 @@ function describeScenario(mode: Mode, est: Estimate | null, classes: ClassRow[],
     });
     if (valid.length < classes.length) lines.push(`(${classes.length - valid.length} incomplete class(es) not included)`);
   }
+  lines.push(ledgerLine(est.ledger));
   lines.push(`Monthly estimate: ${formatUSD(est.monthlyCents)} | Annual: ${formatUSD(est.annualCents)}`);
   if (mode === "custom") lines.push(`Standard comparison: ${formatUSD(est.standard.monthlyCents)}/month (difference ${formatUSD(est.differenceCents)})`);
   const json = JSON.stringify({
@@ -434,9 +443,89 @@ function describeScenario(mode: Mode, est: Estimate | null, classes: ClassRow[],
     classes: mode === "custom"
       ? valid.map((c) => ({ name: clean(c.name, cfg.maxNameLength), type: c.type, bedrooms: c.bedrooms, units: Number(c.unitsText.replace(/[,\s]/g, "")), rateCents: c.rateCents, description: clean(c.description, cfg.maxDescriptionLength) || undefined }))
       : [{ name: "Homes", units: est.totalUnits, rateCents: cfg.standardRateCents }],
+    addons: { ledger: est.ledger, ledgerMonthlyCents: est.addonCents },
     estimateCents: { monthly: est.monthlyCents, annual: est.annualCents, standardMonthly: est.standard.monthlyCents },
   });
-  return { text: lines.join("\n"), json };
+  return { text: lines.join("\n"), json, monthly: formatUSD(est.monthlyCents), annual: formatUSD(est.annualCents) };
+}
+
+const ledgerLine = (on: boolean) => `${cfg.addons.ledger.name}: ${on ? `selected (+${formatUSD(cfg.addons.ledger.monthlyCents)}/month)` : "not selected"}`;
+
+// ── Optional add-ons ────────────────────────────────────────────────────────
+const LEDGER_COMPARE: { area: string; standard: string; ledger: string }[] = [
+  { area: "Invoices", standard: "Created monthly", ledger: "Included, as in Standard Finance" },
+  { area: "Proof of payment", standard: "Homeowner upload and admin review", ledger: "Included, as in Standard Finance" },
+  { area: "Payment history", standard: "History and statements of account", ledger: "Included, as in Standard Finance" },
+  { area: "Arrears", standard: "Arrears tracking and payment plans", ledger: "Included, as in Standard Finance" },
+  { area: "Chart of accounts", standard: "—", ledger: "Organize accounts as assets, liabilities, equity, income and expenses" },
+  { area: "Journal entries", standard: "—", ledger: "Record entries that must balance, and reverse them if needed" },
+  { area: "General ledger and trial balance", standard: "—", ledger: "See every account's activity and check the books balance" },
+  { area: "Financial statements", standard: "—", ledger: "Balance sheet and income statement (profit and loss) by fiscal period" },
+  { area: "Period close", standard: "—", ledger: "Close a fiscal period once its records are final" },
+];
+
+function LedgerAddon({ selected, onChange }: { selected: boolean; onChange: (v: boolean) => void }) {
+  const a = cfg.addons.ledger;
+  const price = `${formatUSD(a.monthlyCents).replace(/\.00$/, "")}/month per community`;
+  return (
+    <section id="addons" className="section addons" aria-labelledby="addons-title">
+      <div className="wrap">
+        <div className="section-head">
+          <p className="eyebrow">Optional add-ons</p>
+          <h2 id="addons-title" className="title">Add more when your community needs it.</h2>
+        </div>
+        <div className="addon-grid">
+          <div className="form-card addon-card" data-selected={selected}>
+            <p className="addon-badge">Optional add-on</p>
+            <h3 className="addon-title">{a.name}</h3>
+            <p className="addon-tagline">More structure and visibility for your community&apos;s finances.</p>
+            <p className="addon-body">
+              Structured double-entry records for boards and treasurers, alongside the Standard Finance tools every community already has. It adds to Standard Finance; it never replaces it.
+            </p>
+            <p className="addon-price"><strong>{price}</strong></p>
+            <ul className="domain-points addon-points">
+              <li>Optional upgrade to Standard Finance, which stays included</li>
+              <li>One predictable monthly fee per community</li>
+              <li>No additional per-homeowner charge</li>
+              <li>Activated after purchase confirmation</li>
+            </ul>
+            <label className="addon-toggle">
+              <input id="addon-ledger" type="checkbox" checked={selected} onChange={(e) => onChange(e.target.checked)} aria-describedby="addon-ledger-help" />
+              <span>Add {a.name}</span>
+              <span className="addon-toggle-price">+{formatUSD(a.monthlyCents)}/month</span>
+            </label>
+            <p id="addon-ledger-help" className="field-help">
+              Updates your estimate above. Choosing it here is a pricing preference, not a purchase. Estimates before applicable taxes; final terms are confirmed in your agreement.
+            </p>
+            <a href="#summary-title" className="link-btn">See your estimate</a>
+          </div>
+
+          <div className="addon-compare">
+            <table className="compare-table">
+              <caption>Standard Finance vs {a.name}</caption>
+              <thead>
+                <tr><th scope="col">Capability</th><th scope="col">Standard Finance <span>(included)</span></th><th scope="col">{a.name} <span>(add-on)</span></th></tr>
+              </thead>
+              <tbody>
+                {LEDGER_COMPARE.map((row) => (
+                  <tr key={row.area}>
+                    <th scope="row">{row.area}</th>
+                    <td>{row.standard === "—" ? <><span aria-hidden="true">—</span><span className="sr-only">Not included</span></> : row.standard}</td>
+                    <td>{row.ledger}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="field-help">The ledger adds to Standard Finance; it doesn&apos;t replace it. Ledger records are kept by your board or treasurer.</p>
+          </div>
+        </div>
+        <figure className="addon-shot">
+          <ShotFrame shot={{ name: "ledger-reports", device: "desktop", alt: "Kaimbrya Accounting Reports: net income, revenue, expenses and assets for the period, with account balances below", sizes: "(min-width: 1200px) 1100px, 94vw" }} />
+          <figcaption>Accounting reports in {a.name}. Sample data from a fictional community.</figcaption>
+        </figure>
+      </div>
+    </section>
+  );
 }
 
 // ── Community domain ────────────────────────────────────────────────────────
@@ -547,7 +636,7 @@ type QField = "name" | "email" | "org" | "location" | "phone" | "homes" | "confi
 const ORDER: QField[] = ["name", "email", "org", "location", "phone", "homes", "configuration", "message"];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-function QuoteForm({ domain, domainCheck, onDomainInvalid, scenario, defaultHomes, suggestedConfig }: { domain: DomainAnswer; domainCheck: DomainCheck; onDomainInvalid: () => void; scenario: { text: string; json: string }; defaultHomes: number; suggestedConfig: string }) {
+function QuoteForm({ ledger, domain, domainCheck, onDomainInvalid, scenario, defaultHomes, suggestedConfig }: { ledger: boolean; domain: DomainAnswer; domainCheck: DomainCheck; onDomainInvalid: () => void; scenario: { text: string; json: string; monthly: string; annual: string }; defaultHomes: number; suggestedConfig: string }) {
   const [values, setValues] = useState<Record<QField, string>>({ name: "", email: "", org: "", location: "", phone: "", homes: "", configuration: "", message: "" });
   const [homesEdited, setHomesEdited] = useState(false);
   const [attach, setAttach] = useState(true);
@@ -558,6 +647,9 @@ function QuoteForm({ domain, domainCheck, onDomainInvalid, scenario, defaultHome
   const doneRef = useRef<HTMLHeadingElement>(null);
   const dom = describeDomain(domain, domainCheck);
   const sentScenario = scenario.text ? [scenario.text, ...dom.lines].join("\n") : "";
+  // The estimate's monthly and annual totals, sent as their own fields (empty when there's no estimate).
+  const estMonthly = scenario.monthly;
+  const estAnnual = scenario.annual;
 
   // Follow the calculator until the visitor types their own figure.
   const homesValue = homesEdited ? values.homes : defaultHomes > 0 ? String(defaultHomes) : "";
@@ -604,8 +696,9 @@ function QuoteForm({ domain, domainCheck, onDomainInvalid, scenario, defaultHome
           "request-type": "Pricing inquiry - website estimate, not an accepted quotation",
           name: clean(values.name, 120), email: values.email.trim(), org: clean(values.org, 160), location: clean(values.location, 160),
           phone: values.phone.trim(), homes: homesValue.replace(/[,\s]/g, ""), configuration: configValue, message: values.message.slice(0, 1000),
+          "ledger-addon": ledger ? "Selected" : "Not selected", "estimate-monthly": estMonthly, "estimate-annual": estAnnual,
           "domain-status": dom.status, "domain-name": dom.name, "domain-help": dom.help,
-          scenario: attach ? sentScenario : "(not attached)", "scenario-json": attach ? scenario.json.slice(0, 6000) : "",
+          scenario: attach ? sentScenario : `(not attached)\n${ledgerLine(ledger)}`, "scenario-json": attach ? scenario.json.slice(0, 6000) : "",
           "rate-card": cfg.version, source: window.location.href.split("#")[0] ?? "",
         });
         const res = await fetch("/__forms.html", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
@@ -662,6 +755,14 @@ function QuoteForm({ domain, domainCheck, onDomainInvalid, scenario, defaultHome
                 {error("configuration")}
               </div>
               <div className="field field--full"><label htmlFor="q-message">Anything else we should know? <span className="opt">(optional)</span></label><textarea {...field("message")} value={values.message} rows={4} maxLength={1200} />{error("message")}</div>
+              <div className="field field--full domain-recap">
+                <p className="field-label">Optional add-on</p>
+                <p className="domain-recap-value">
+                  <span>{ledgerLine(ledger)}</span>
+                  <a href="#addons" className="link-btn">Change<span className="sr-only"> the add-on selection</span></a>
+                </p>
+                <p className="field-help">Selecting it is a pricing preference, not a purchase. Nothing is activated by sending this request.</p>
+              </div>
               <div className="field field--full domain-recap">
                 <p className="field-label">Community domain <span className="opt">(optional)</span></p>
                 <p className="domain-recap-value">

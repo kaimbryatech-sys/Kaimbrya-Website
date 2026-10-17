@@ -1,7 +1,7 @@
 # Pricing calculator: QA evidence
 
 Feature: `/pricing/`, the estimate simulator and quote request. Website only; no change to the Kaimbrya app or its database.
-Rate card `2026-10-16.1` in `src/content/pricing-config.ts`: US$150.00 per community + US$0.50 per home, monthly. Illustrative simulation rates: US$0.40, 0.50, 0.65, 0.80, 1.00 (not approved prices). USD only at launch; JMD is off until a dated rate is set in the same file.
+Rate card `2026-10-17.1` in `src/content/pricing-config.ts`: US$150.00 per community + US$0.50 per home, monthly. Illustrative simulation rates: US$0.40, 0.50, 0.65, 0.80, 1.00 (not approved prices). USD only at launch; JMD is off until a dated rate is set in the same file.
 
 ## How it's tested
 
@@ -70,3 +70,19 @@ All money is integer US cents; formatting happens only for display. The page pos
 2. The illustrative rates (US$0.40–1.00) need commercial approval before they're treated as anything more than simulation values.
 3. JMD equivalents are off. To switch them on, set `jmd` in `src/content/pricing-config.ts` with the rate, effective date and source, and keep it current.
 4. The privacy policy now describes quote requests; it still needs the legal review listed in `LEGAL-REVIEW.md`.
+
+## Professional Community Ledger add-on (17 October 2026)
+
+Optional add-on, `addons.ledger` in `src/content/pricing-config.ts`: US$20.00/month **per community** (never per home). Off by default; independent of presets and reset, like the domain answer. Adds to Standard Finance (which stays included); never replaces it.
+
+| Scenario | Expected | Engine test | Browser check | Result |
+| --- | --- | --- | --- | --- |
+| 190 homes, add-on off / on | US$245.00 / US$265.00 per month | Yes | Yes | Pass |
+| Annual, off / on | US$2,940.00 / US$3,180.00 | Yes | On: yes | Pass |
+| 0, 50, 500 homes | Add-on always +US$20.00 | Yes | — | Pass |
+| Custom classes (Ruby/Onyx/Diamond) | +US$20.00; standard comparison also includes it, difference unchanged | Yes | — | Pass |
+| Per-home figure | Includes the add-on (stated in the summary) | Yes | — | Pass |
+| Toggle off again | Back to US$245.00; homes unchanged | — | Yes | Pass |
+| Quote payload | `ledger-addon=Selected`, `estimate-monthly`, `estimate-annual`, scenario line "Professional Community Ledger: selected (+US$20.00/month)" | — | Yes | Pass |
+
+Copy rules: the comparison table claims only chart of accounts, balanced journal entries with reversals, general ledger and trial balance, balance sheet and income statement by fiscal period, and fiscal period close. It does not claim automatic posting of payments or invoices, bank reconciliation, budgets vs actuals or report exports, and names no other accounting product. Selecting the add-on is a pricing preference; nothing is activated by a quote request.

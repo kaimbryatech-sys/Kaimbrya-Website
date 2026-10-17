@@ -51,4 +51,5 @@ Captured from a production build of app `main` (commit a95db32b) against the tes
 | library-share.png | Share Management dialog, admin | Communication, Library | Yes; shared with the Home owner role |
 | owner-budget-notice.png | `/dashboard/announcements` on a phone, homeowner | Communication hero; rumour-to-facts step 1 | Yes; pinned, Policy, High |
 | owner-notifications.png | Notifications panel on a phone, homeowner | Rumour-to-facts step 2; Library | Yes; wording matches the app's announcement and Library notifications |
-
+| ledger-reports.png | `/dashboard/finance/reports`, Admin, ledger branch build with Mahoe Ridge fixtures (`marketing/app-demo-data/ledger.seed.mjs`) | Pricing: Professional Community Ledger add-on | Yes; amounts formatted, sample data |
+| ledger-trial-balance.png | `/dashboard/finance/ledger` trial balance, Admin, same fixtures | Available for ledger pages | Yes |
